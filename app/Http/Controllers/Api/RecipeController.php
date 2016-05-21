@@ -15,9 +15,9 @@ use Validator;
 
 class RecipeController extends Controller
 {
-    public function __construct(RecipeService $recipeService, RecipeRepository $repo)
+    public function __construct()
     {
-        $this->recipeService = $recipeService;
+
         
     }
 
@@ -224,7 +224,7 @@ class RecipeController extends Controller
     {
         //TODO: check response in error
         if (!is_numeric($min) || !is_numeric($max) || $min<0 || $max<0){
-            return ;
+            return;
         }
         $recipe = new Recipe();
         $recipes = $recipe->searchByEnergyRange($min,$max);
