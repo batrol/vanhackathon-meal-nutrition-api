@@ -39,11 +39,12 @@ class RecipeController extends Controller
             $responseBody =  $response->getBody();
 
             if ($response->getStatusCode() != 200){
-                $returnData = array(
-                    'status' => 'error',
-                    'message' => 'No Api Response'
-                );
-                return response()->json($returnData, 500);
+                return $this->returnWithError('conexao falhou', 400);
+//                $returnData = array(
+//                    'status' => 'error',
+//                    'message' => 'No Api Response'
+//                );
+//                return response()->json($returnData, 500);
             }
             $apiIngredient = json_decode($responseBody, true);
 

@@ -3,6 +3,7 @@
 namespace App\Exceptions;
 
 use Exception;
+use GoCanada\Popos\ApiError;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -42,14 +43,11 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
+        $apiError = new ApiError($e->getMessage(), 500);
+
         if ($e instanceof ModelNotFoundException) {
             //$e = new NotFoundHttpException($e->getMessage(), $e);
-
-            $returnData = array(
-                'status' => 'error',
-                'message' => $e->getMessage(),
-            );
-            return response()->json($returnData, 500);
+            return response()->json($apiError->toArray(), $apiError->getStatusCode());
         }
 
         return parent::render($request, $e);
