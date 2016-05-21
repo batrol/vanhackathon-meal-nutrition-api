@@ -1,6 +1,4 @@
-<?php
-
-namespace GoCanada\Models;
+<?php namespace GoCanada\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
