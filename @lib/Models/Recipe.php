@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace GoCanada\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,4 +15,8 @@ class Recipe extends Model
     ];
 
     protected $table = 'recipe';
+
+    public function ingredients(){
+        return $this->hasMany('GoCanada\Models\IngredientRecipe');
+    }
 }
