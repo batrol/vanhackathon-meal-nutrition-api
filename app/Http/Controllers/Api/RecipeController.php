@@ -15,6 +15,11 @@ use Validator;
 
 class RecipeController extends Controller
 {
+    public function __construct(RecipeService $recipeService, RecipeRepository $repo)
+    {
+        $this->recipeService = $recipeService;
+        
+    }
 
     // Function responsible for giving Nutrient Information related to a identified Recipe.
     public function nutritionInfo($id)
@@ -31,6 +36,8 @@ class RecipeController extends Controller
             $ndbno = $ingredient->ndbno;
             $quantity = $ingredient->quantity;
 
+            // Decorator
+
             // Consumes the USDA api that contains nutrition information about each ingredient.
             $apiKey= 'IlAoU2IJI9TWWN7wmupWrZFwOfbyjOwNmTS2eZsy';
             $apiUrl = 'http://api.nal.usda.gov/ndb/reports/?ndbno='.$ndbno.'&type=f&format=json&api_key='.$apiKey;
@@ -39,11 +46,12 @@ class RecipeController extends Controller
             $responseBody =  $response->getBody();
 
             if ($response->getStatusCode() != 200){
-                $returnData = array(
-                    'status' => 'error',
-                    'message' => 'No Api Response'
-                );
-                return response()->json($returnData, 500);
+                return $this->returnWithError('conexao falhou', 400);
+//                $returnData = array(
+//                    'status' => 'error',
+//                    'message' => 'No Api Response'
+//                );
+//                return response()->json($returnData, 500);
             }
             $apiIngredient = json_decode($responseBody, true);
 
