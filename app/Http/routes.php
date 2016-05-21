@@ -23,5 +23,7 @@ Route::group([
 ], function () {
 
     Route::get('recipe/{id}/nutrition-info', 'RecipeController@nutritionInfo');
+    Route::post('recipe', 'RecipeController@store');
+    Route::put('recipe/{id}', 'RecipeController@update');
 });
 
