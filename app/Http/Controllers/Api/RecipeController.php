@@ -9,6 +9,7 @@ use GoCanada\Models\IngredientRecipe;
 use GuzzleHttp\Client;
 
 use Illuminate\Http\Request;
+use DB;
 use Validator;
 
 
@@ -112,4 +113,59 @@ class RecipeController extends Controller
 
         return ["OK"];
     }
+
+    public function searchByName($name)
+    {
+
+        $recipe = new Recipe();
+        $recipes = $recipe->searchByName($name);
+        return $recipes;
+    }
+
+    public function searchByUser($id)
+    {
+        //TODO: check if it is number
+        //TODO: check response in error
+        if (!is_numeric($id) || $id<0){
+            return ;
+        }
+        $recipe = new Recipe();
+        $recipes = $recipe->searchByUser($id);
+        return $recipes;
+
+    }
+
+    public function searchByCaloriesMin($min)
+    {
+        //TODO: check response in error
+        if (!is_numeric($min) || $min<0){
+            return ;
+        }
+        $recipe = new Recipe();
+        $recipes = $recipe->searchByCaloriesMin($min);
+        return $recipes;
+    }
+
+    public function searchByCaloriesMax($max)
+    {
+        //TODO: check response in error
+        if ( !is_numeric($max) || $max<0){
+            return ;
+        }
+        $recipe = new Recipe();
+        $recipes = $recipe->searchByCaloriesMax($max);
+        return $recipes;
+    }
+
+    public function searchByCaloriesRange($min,$max)
+    {
+        //TODO: check response in error
+        if (!is_numeric($min) || !is_numeric($max) || $min<0 || $max<0){
+            return ;
+        }
+        $recipe = new Recipe();
+        $recipes = $recipe->searchByCaloriesRange($min,$max);
+        return $recipes;
+    }
+
 }
