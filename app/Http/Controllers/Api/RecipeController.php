@@ -181,23 +181,27 @@ class RecipeController extends Controller
         return $recipes;
     }
 
+    /**
+     * @param $id
+     * @return array
+     */
     public function show($id) {
 
         $Recipe = new Recipe();
-        $recipeItem = $Recipe->find($id);
+        $recipeItem = $Recipe->findOrFail($id);
+
+        $ingredients = $recipeItem->ingredients;
 
         $response = [
             "name" => $recipeItem->name,
-            "user_id" => $recipeItem->user_id,
+            "user_id" => $recipeItem->user->name,
             "visibility" => $recipeItem->visibility,
             "calories_total" => $recipeItem->calories_total,
-
+            "ingredients" =>$ingredients
         ];
-
 
         return ["data"=>$response];
     }
-
 
 }
 
