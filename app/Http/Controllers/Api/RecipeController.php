@@ -58,7 +58,7 @@ class RecipeController extends Controller
             // Iterates over nutrients to find calories information and fills array that will be returned.
             $nutrients = $apiIngredient['report']['food']['nutrients'];
 
-            foreach( $nutrients as $nutrient){
+            foreach ($nutrients as $nutrient) {
 
                 $nutrientId = $nutrient['nutrient_id'];
                 //var_dump($nutrient);
@@ -89,8 +89,13 @@ class RecipeController extends Controller
 	
     public function store(Request $request)
     {
+        // $api->getTotalCalores()
+        
         return DB::transaction(function () use ($request) {
             $ingredientRecipe = new IngredientRecipe();
+            // asdasd
+            
+            // api request - 2 min
 
             return $this->save($request, $ingredientRecipe);
         });

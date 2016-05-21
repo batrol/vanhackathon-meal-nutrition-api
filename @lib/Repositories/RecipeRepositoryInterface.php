@@ -2,6 +2,7 @@
 
 interface RecipeRepositoryInterface
 {
-    public function 
-
+    public function getIngredientsByRecipe($id);
+    public function getNutritionalInformationByRecipe($id);
+    
 }
