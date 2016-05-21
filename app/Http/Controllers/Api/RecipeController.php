@@ -147,6 +147,19 @@ class RecipeController extends Controller
 
     }
 
+    public function searchById($id)
+    {
+        //TODO: check if it is number
+        //TODO: check response in error
+        if (!is_numeric($id) || $id<0){
+            return ;
+        }
+        $recipe = new Recipe();
+        $recipes = $recipe->searchByUser($id);
+        return $recipes;
+
+    }
+
     public function searchByCaloriesMin($min)
     {
         //TODO: check response in error
@@ -180,4 +193,24 @@ class RecipeController extends Controller
         return $recipes;
     }
 
+    public function show($id) {
+
+        $Recipe = new Recipe();
+        $recipeItem = $Recipe->find($id);
+
+        $response = [
+            "name" => $recipeItem->name,
+            "user_id" => $recipeItem->user_id,
+            "visibility" => $recipeItem->visibility,
+            "calories_total" => $recipeItem->calories_total,
+
+        ];
+
+
+        return ["data"=>$response];
+    }
+
+
 }
+
+

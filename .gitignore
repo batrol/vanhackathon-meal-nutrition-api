@@ -17,4 +17,5 @@ _ide_helper_models.php
 .buildpath
 .phpstorm.meta.php
 composer.phar
+composer.lock
 Thumbs.db

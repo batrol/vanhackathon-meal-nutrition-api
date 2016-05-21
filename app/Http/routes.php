@@ -30,5 +30,6 @@ Route::group([
     Route::get('recipe/calories/range/{min}/{max}', 'RecipeController@searchByCaloriesRange');
     Route::post('recipe', 'RecipeController@store');
     Route::put('recipe/{id}', 'RecipeController@update');
+    Route::get('recipe/{id}', 'RecipeController@show');
 });
 
