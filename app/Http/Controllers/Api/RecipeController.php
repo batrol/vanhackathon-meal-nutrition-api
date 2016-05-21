@@ -1,6 +1,11 @@
-<?php namespace App\Http\Controllers\Api;
+<?php 
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+
+use Illuminate\Http\Request;
+
+use GoCanada\Models\IngredientRecipe;
 
 class RecipeController extends Controller
 {
@@ -20,13 +25,31 @@ class RecipeController extends Controller
         ];
     }
 	
-    public function store()
+    public function store(Request $request)
     {
-        
+		//basic saving test
+        $ingredientRecipe = new IngredientRecipe();
+
+        $ingredientRecipe->recipe_id = $request->recipe_id;
+        $ingredientRecipe->ndbno = $request->ndbno;
+        $ingredientRecipe->quantity = $request->quantity;
+
+        $ingredientRecipe->save();
+		
+		return ["OK"];
     }
 	
-    public function update($id)
+    public function update(Request $request)
     {
-        
+		//basic saving test
+        $ingredientRecipe = IngredientRecipe::find($id, $request->recipe_id);
+
+        $ingredientRecipe->recipe_id = $request->recipe_id;
+        $ingredientRecipe->ndbno = $request->ndbno;
+        $ingredientRecipe->quantity = $request->quantity;
+
+        $ingredientRecipe->save();
+		
+		return ["OK"];
     }
 }
