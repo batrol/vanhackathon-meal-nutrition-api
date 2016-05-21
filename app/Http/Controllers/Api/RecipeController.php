@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use GoCanada\Models\Recipe;
 use GoCanada\Models\IngredientRecipe;
 
+use GuzzleHttp\Client;
+
 use Illuminate\Http\Request;
 
 
@@ -28,43 +30,51 @@ class RecipeController extends Controller
             $quantity = $ingredient->quantity;
 
             // Consumes the USDA api that contains nutrition information about each ingredient.
-            $apiUrl = 'http://api.nal.usda.gov/ndb/reports/?ndbno='.$ndbno.'&type=b&format=json&api_key=DEMO_KEY';
-            $externalData = file_get_contents($apiUrl);
-            $apiIngredient = json_decode($externalData, true);
+            $apiKey= 'IlAoU2IJI9TWWN7wmupWrZFwOfbyjOwNmTS2eZsy';
+            $apiUrl = 'http://api.nal.usda.gov/ndb/reports/?ndbno='.$ndbno.'&type=f&format=json&api_key='.$apiKey;
+            $client = new Client();
+            $response = $client->request('GET', $apiUrl);
+            $responseBody =  $response->getBody();
+
+            if ($response->getStatusCode() != 200){
+                $returnData = array(
+                    'status' => 'error',
+                    'message' => 'No Api Response'
+                );
+                return response()->json($returnData, 500);
+            }
+            $apiIngredient = json_decode($responseBody, true);
 
             // Iterates over nutrients to find calories information and fills array that will be returned.
             $nutrients = $apiIngredient['report']['food']['nutrients'];
+
             foreach( $nutrients as $nutrient){
 
-                // Finds if nutrient is Energy(calorie).
-                if ($nutrient['name']=='Energy'){
+                $nutrientId = $nutrient['nutrient_id'];
+                //var_dump($nutrient);
+                // Checks if nutrient is already existent in array
+                if(isset($ingredientsNutritionInfo[$nutrientId])){
+
+                    // if nutrient exists add to existing value
+                    $nutrientOldValue = $ingredientsNutritionInfo[$nutrientId]['value'];
+                    $ingredientsNutritionInfo[$nutrientId]['value'] = $nutrientOldValue+($nutrient['value']*$quantity);
+
+                }else{
 
                     // Sets the values for that nutrient multiplying by the ingredient quantity (total amount).
-                    $ingredientsNutritionInfo[]= [
-                        'name'  => 'Energy',
-                        'value' => $nutrient['value']*$quantity
+                    $ingredientsNutritionInfo[$nutrientId]= [
+                        'name'  => $nutrient['name'],
+                        'value' => $nutrient['value']*$quantity,
+                        'unit'  => $nutrient['unit'],
+                        'group' => $nutrient['group']
                     ];
-
-                    // Leaves iteration as soon as possible.
-                    break;
                 }
+
             }
+
         }
-        return $ingredientsNutritionInfo;
 
-
-        return [
-            "nutrients" => [
-                [
-                    "nutrient_id"            => 208,
-                    "name"                   => "Energy",
-                    "value"                  => 500,
-                    "unity"                  => "kcal",
-                    "group"                  => "Proximates",
-                    "daily_value_percentage" => 10
-                ]
-            ]
-        ];
+        return ['nutrients'=>$ingredientsNutritionInfo];
     }
 	
     public function store(Request $request)
