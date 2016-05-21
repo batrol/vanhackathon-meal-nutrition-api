@@ -6,6 +6,8 @@ class RecipeController extends Controller
 {
     public function nutritionInfo($recipeId)
     {
+
+
         return [
             "nutrients" => [
                 [
