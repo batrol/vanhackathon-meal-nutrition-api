@@ -43,11 +43,37 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $e)
     {
+        // debug for development. Showing plain error without any treatments
+        if (env('EXCEPTION_HANDLER_NO_CATCH') == true) {
+            $error['message']      = $e->getMessage();
+            $trace                 = $e->getTrace();
+            $error['trace_last_5'] = array_slice($trace, 0, 5);
+
+            return response()->json($error, 500);
+        }
+
         $apiError = new ApiError($e->getMessage(), 500);
 
-        if ($e instanceof ModelNotFoundException) {
-            //$e = new NotFoundHttpException($e->getMessage(), $e);
-            return response()->json($apiError->toArray(), $apiError->getStatusCode());
+        switch (true) {
+            case $e instanceof BaseException: {
+                $apiError->setStatusCode($e->getHttpStatus());
+                $apiError->setMessage($e->getMessage());
+                return response()->json($apiError->toArray(), $apiError->getStatusCode());
+            }
+
+            case $e instanceof ModelNotFoundException: {
+                $apiError->setMessage('Requested information not found');
+                $apiError->setStatusCode(404);
+
+                return response()->json($apiError->toArray(), $apiError->getStatusCode());
+            }
+
+            default: {
+                $apiError->setMessage('Something went wrong');
+                $apiError->setStatusCode(500);
+
+                return response()->json($apiError->toArray(), $apiError->getStatusCode());
+            }
         }
 
         return parent::render($request, $e);
