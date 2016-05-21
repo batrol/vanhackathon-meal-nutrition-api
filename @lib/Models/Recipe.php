@@ -46,9 +46,4 @@ class Recipe extends Model
         return self::whereRaw("calories_total between $min and $max ")->with('ingredients')->get();
     }
 
-    public function searchById($id){
-        return $this->find($id);
-    }
-
-
 }

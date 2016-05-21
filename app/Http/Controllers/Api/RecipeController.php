@@ -184,7 +184,7 @@ class RecipeController extends Controller
     public function show($id) {
 
         $Recipe = new Recipe();
-        $recipeItem = $Recipe->ById($id);
+        $recipeItem = $Recipe->find($id);
 
         $response = [
             "name" => $recipeItem->name,
