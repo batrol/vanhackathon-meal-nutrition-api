@@ -41,10 +41,10 @@ class RecipeController extends Controller
 		return ["OK"];
     }
 	
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
 		//basic saving test
-        $ingredientRecipe = IngredientRecipe::find($id, $request->recipe_id);
+        $ingredientRecipe = IngredientRecipe::find($id);
 
         $ingredientRecipe->recipe_id = $request->recipe_id;
         $ingredientRecipe->ndbno = $request->ndbno;
