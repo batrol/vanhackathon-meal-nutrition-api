@@ -58,7 +58,7 @@ class RecipeController extends Controller
             // Iterates over nutrients to find calories information and fills array that will be returned.
             $nutrients = $apiIngredient['report']['food']['nutrients'];
 
-            foreach ($nutrients as $nutrient) {
+            foreach( $nutrients as $nutrient){
 
                 $nutrientId = $nutrient['nutrient_id'];
                 //var_dump($nutrient);
@@ -89,44 +89,78 @@ class RecipeController extends Controller
 	
     public function store(Request $request)
     {
-        // $api->getTotalCalores()
-        
-        return DB::transaction(function () use ($request) {
-            $ingredientRecipe = new IngredientRecipe();
-            // asdasd
-            
-            // api request - 2 min
+        $recipe = new Recipe();
 
-            return $this->save($request, $ingredientRecipe);
-        });
+        return $this->save($request, $recipe, "i");
     }
 	
     public function update(Request $request, $id)
     {
-        $ingredientRecipe = IngredientRecipe::findOrFail($id);
+        $recipe = Recipe::findOrFail($id);
 
-        return $this->save($request, $ingredientRecipe);
+        return $this->save($request, $recipe, "u");
     }
 
-    private function save(Request $request, IngredientRecipe $ingredientRecipe)
+    private function save(Request $request, Recipe $recipe, $action)
     {
-        $validator = Validator::make($request->all(), [
-            'recipe_id' => 'required',
-            'ndbno' => 'required',
-            'quantity' => 'required',
-        ]);
+        $rules = [
+            'name' => 'required|unique:recipe',
+            'visibility' => 'required',
+        ];
+        $ingredientsPost = [];
+        foreach ($request->get('ingredients') as $k => $v) {
+            $rules['ingredients.' . $k . '.ndbno'] = 'required';
+            $rules['ingredients.' . $k . '.quantity'] = 'required|numeric';
 
-        if ($validator->fails()) {
-            return ["status" => "error", "message" => $validator->errors()->all()];
+            $ingredientsPost[$v["ndbno"]] = $v;
         }
 
-        $ingredientRecipe->recipe_id = $request->recipe_id;
-        $ingredientRecipe->ndbno = $request->ndbno;
-        $ingredientRecipe->quantity = $request->quantity;
+        $validator = Validator::make($request->all(), $rules);
 
-        $ingredientRecipe->save();
+        if ($validator->fails()) {
+            return ["status" => "error", "message" => implode(" ", $validator->errors()->all()), "errors" => $validator->errors()->all()];
+        }
 
-        return ["OK"];
+        //TODO: calculate the total_energy outside the transaction
+        DB::transaction(function () use($recipe, $ingredientsPost, $request) {
+            $recipe->name = $request->name;
+            $recipe->visibility = $request->visibility;
+
+            $recipe->save();
+
+            $ingredientsRecipe = [];
+            $ingredients = $recipe->ingredients;
+            foreach ($ingredients as $ingredient) {
+                if (array_key_exists($ingredient->nbdno, $ingredientsPost)) {
+                    $ingredient->quantity = $ingredientsPost[$ingredient->nbdno]["quantity"];
+                    $ingredient->save();
+
+                    $ingredientsRecipe[] = $ingredient->ndbno;
+                }
+                else {
+                    $ingredient->delete();
+                }
+            }
+            foreach ($ingredientsPost as $ingredientPost) {
+                if (!in_array($ingredientPost["ndbno"], $ingredientsRecipe)) {
+                    $ingredient = new IngredientRecipe();
+                    $ingredient->recipe_id = $recipe->id;
+                    $ingredient->ndbno = $ingredientPost["ndbno"];
+                    $ingredient->quantity = $ingredientPost["quantity"];
+                    $ingredient->save();
+                }
+            }
+
+            //TODO: calculate the total_energy outside the transaction
+            $recipe->energy_total = $this->nutritionInfo($recipe->id)["nutrients"]["208"]["value"];
+            $recipe->save();
+        });
+
+        if ($action == "i"){
+            return ["OK - 201"];
+        }
+
+        return ["OK - 200"];
     }
 
     public function searchByName($name)
