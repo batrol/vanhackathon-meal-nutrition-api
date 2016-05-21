@@ -112,4 +112,21 @@ class RecipeController extends Controller
 
         return ["OK"];
     }
+
+    public function show($id) {
+
+        $Recipe = new Recipe();
+        $recipeItem = $Recipe->ById($id);
+
+        $response = [
+            "name" => $recipeItem->name,
+            "user_id" => $recipeItem->user_id,
+            "visibility" => $recipeItem->visibility,
+            "calories_total" => $recipeItem->calories_total,
+
+        ];
+
+
+        return ["data"=>$response];
+    }
 }

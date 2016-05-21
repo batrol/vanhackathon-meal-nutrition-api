@@ -19,4 +19,13 @@ class Recipe extends Model
     public function ingredients(){
         return $this->hasMany('GoCanada\Models\IngredientRecipe');
     }
+
+    public function users(){
+        return $this->hasMany('GoCanada\Models\User');
+    }
+
+    public function ById($id){
+        return $this->find($id);
+    }
+
 }
