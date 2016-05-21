@@ -38,6 +38,7 @@ class RecipeController extends Controller
             $response = $client->request('GET', $apiUrl);
             $responseBody =  $response->getBody();
 
+            //TODO: check
             if ($response->getStatusCode() != 200){
                 $returnData = array(
                     'status' => 'error',
@@ -47,7 +48,7 @@ class RecipeController extends Controller
             }
             $apiIngredient = json_decode($responseBody, true);
 
-            // Iterates over nutrients to find calories information and fills array that will be returned.
+            // Iterates over nutrients to find nutrients information and fills array that will be returned.
             $nutrients = $apiIngredient['report']['food']['nutrients'];
 
             foreach( $nutrients as $nutrient){
@@ -148,36 +149,36 @@ class RecipeController extends Controller
 
     }
 
-    public function searchByCaloriesMin($min)
+    public function searchByEnergyMin($min)
     {
         //TODO: check response in error
         if (!is_numeric($min) || $min<0){
             return ;
         }
         $recipe = new Recipe();
-        $recipes = $recipe->searchByCaloriesMin($min);
+        $recipes = $recipe->searchByEnergyMin($min);
         return $recipes;
     }
 
-    public function searchByCaloriesMax($max)
+    public function searchByEnergyMax($max)
     {
         //TODO: check response in error
         if ( !is_numeric($max) || $max<0){
             return ;
         }
         $recipe = new Recipe();
-        $recipes = $recipe->searchByCaloriesMax($max);
+        $recipes = $recipe->searchByEnergyMax($max);
         return $recipes;
     }
 
-    public function searchByCaloriesRange($min,$max)
+    public function searchByEnergyRange($min,$max)
     {
         //TODO: check response in error
         if (!is_numeric($min) || !is_numeric($max) || $min<0 || $max<0){
             return ;
         }
         $recipe = new Recipe();
-        $recipes = $recipe->searchByCaloriesRange($min,$max);
+        $recipes = $recipe->searchByEnergyRange($min,$max);
         return $recipes;
     }
 
@@ -187,13 +188,12 @@ class RecipeController extends Controller
         $recipeItem = $Recipe->find($id);
 
         $response = [
-            "name" => $recipeItem->name,
+            "name" => $recipeItem->user->name,
             "user_id" => $recipeItem->user_id,
             "visibility" => $recipeItem->visibility,
-            "calories_total" => $recipeItem->calories_total,
-
+            "energy_total" => $recipeItem->energy_total,
+            "ingredients" => $recipeItem->ingredients
         ];
-
 
         return ["data"=>$response];
     }

@@ -20,6 +20,10 @@ class Recipe extends Model
         return $this->hasMany('GoCanada\Models\IngredientRecipe');
     }
 
+    public function user(){
+        return $this->belongsTo('GoCanada\Models\User');
+    }
+
     public function searchByName($name){
 
         $name = strtolower($name);
