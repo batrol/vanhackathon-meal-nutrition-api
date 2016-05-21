@@ -15,6 +15,11 @@ use Validator;
 
 class RecipeController extends Controller
 {
+    public function __construct(RecipeService $recipeService, RecipeRepository $repo)
+    {
+        $this->recipeService = $recipeService;
+        
+    }
 
     // Function responsible for giving Nutrient Information related to a identified Recipe.
     public function nutritionInfo($id)
@@ -31,6 +36,8 @@ class RecipeController extends Controller
             $ndbno = $ingredient->ndbno;
             $quantity = $ingredient->quantity;
 
+            // Decorator
+
             // Consumes the USDA api that contains nutrition information about each ingredient.
             $apiKey= 'IlAoU2IJI9TWWN7wmupWrZFwOfbyjOwNmTS2eZsy';
             $apiUrl = 'http://api.nal.usda.gov/ndb/reports/?ndbno='.$ndbno.'&type=f&format=json&api_key='.$apiKey;
@@ -40,11 +47,12 @@ class RecipeController extends Controller
 
             //TODO: check
             if ($response->getStatusCode() != 200){
-                $returnData = array(
-                    'status' => 'error',
-                    'message' => 'No Api Response'
-                );
-                return response()->json($returnData, 500);
+                return $this->returnWithError('conexao falhou', 400);
+//                $returnData = array(
+//                    'status' => 'error',
+//                    'message' => 'No Api Response'
+//                );
+//                return response()->json($returnData, 500);
             }
             $apiIngredient = json_decode($responseBody, true);
 
@@ -82,37 +90,78 @@ class RecipeController extends Controller
 	
     public function store(Request $request)
     {
-        $ingredientRecipe = new IngredientRecipe();
+        $recipe = new Recipe();
 
-        return $this->save($request, $ingredientRecipe);
+        return $this->save($request, $recipe, "i");
     }
 	
     public function update(Request $request, $id)
     {
-        $ingredientRecipe = IngredientRecipe::findOrFail($id);
+        $recipe = Recipe::findOrFail($id);
 
-        return $this->save($request, $ingredientRecipe);
+        return $this->save($request, $recipe, "u");
     }
 
-    private function save(Request $request, IngredientRecipe $ingredientRecipe)
+    private function save(Request $request, Recipe $recipe, $action)
     {
-        $validator = Validator::make($request->all(), [
-            'recipe_id' => 'required',
-            'ndbno' => 'required',
-            'quantity' => 'required',
-        ]);
+        $rules = [
+            'name' => 'required|unique:recipe',
+            'visibility' => 'required',
+        ];
+        $ingredientsPost = [];
+        foreach ($request->get('ingredients') as $k => $v) {
+            $rules['ingredients.' . $k . '.ndbno'] = 'required';
+            $rules['ingredients.' . $k . '.quantity'] = 'required|numeric';
 
-        if ($validator->fails()) {
-            return ["status" => "error", "message" => $validator->errors()->all()];
+            $ingredientsPost[$v["ndbno"]] = $v;
         }
 
-        $ingredientRecipe->recipe_id = $request->recipe_id;
-        $ingredientRecipe->ndbno = $request->ndbno;
-        $ingredientRecipe->quantity = $request->quantity;
+        $validator = Validator::make($request->all(), $rules);
 
-        $ingredientRecipe->save();
+        if ($validator->fails()) {
+            return ["status" => "error", "message" => implode(" ", $validator->errors()->all()), "errors" => $validator->errors()->all()];
+        }
 
-        return ["OK"];
+        //TODO: calculate the total_energy outside the transaction
+        DB::transaction(function () use($recipe, $ingredientsPost, $request) {
+            $recipe->name = $request->name;
+            $recipe->visibility = $request->visibility;
+
+            $recipe->save();
+
+            $ingredientsRecipe = [];
+            $ingredients = $recipe->ingredients;
+            foreach ($ingredients as $ingredient) {
+                if (array_key_exists($ingredient->nbdno, $ingredientsPost)) {
+                    $ingredient->quantity = $ingredientsPost[$ingredient->nbdno]["quantity"];
+                    $ingredient->save();
+
+                    $ingredientsRecipe[] = $ingredient->ndbno;
+                }
+                else {
+                    $ingredient->delete();
+                }
+            }
+            foreach ($ingredientsPost as $ingredientPost) {
+                if (!in_array($ingredientPost["ndbno"], $ingredientsRecipe)) {
+                    $ingredient = new IngredientRecipe();
+                    $ingredient->recipe_id = $recipe->id;
+                    $ingredient->ndbno = $ingredientPost["ndbno"];
+                    $ingredient->quantity = $ingredientPost["quantity"];
+                    $ingredient->save();
+                }
+            }
+
+            //TODO: calculate the total_energy outside the transaction
+            $recipe->energy_total = $this->nutritionInfo($recipe->id)["nutrients"]["208"]["value"];
+            $recipe->save();
+        });
+
+        if ($action == "i"){
+            return ["OK - 201"];
+        }
+
+        return ["OK - 200"];
     }
 
     public function searchByName($name)
