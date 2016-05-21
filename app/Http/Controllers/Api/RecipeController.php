@@ -83,25 +83,28 @@ class RecipeController extends Controller
     {
         $recipe = new Recipe();
 
-        return $this->save($request, $recipe);
+        return $this->save($request, $recipe, "i");
     }
 	
     public function update(Request $request, $id)
     {
         $recipe = Recipe::findOrFail($id);
 
-        return $this->save($request, $recipe);
+        return $this->save($request, $recipe, "u");
     }
 
-    private function save(Request $request, Recipe $recipe)
+    private function save(Request $request, Recipe $recipe, $action)
     {
         $rules = [
             'name' => 'required|unique:recipe',
             'visibility' => 'required',
         ];
-        foreach($request->get('ingredients') as $k => $v){
-            $rules['ingredients.'.$k.'.ndbno'] = 'required';
-            $rules['ingredients.'.$k.'.quantity'] = 'required|numeric';
+        $ingredientsPost = [];
+        foreach ($request->get('ingredients') as $k => $v) {
+            $rules['ingredients.' . $k . '.ndbno'] = 'required';
+            $rules['ingredients.' . $k . '.quantity'] = 'required|numeric';
+
+            $ingredientsPost[$v["ndbno"]] = $v;
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -110,20 +113,46 @@ class RecipeController extends Controller
             return ["status" => "error", "message" => implode(" ", $validator->errors()->all()), "errors" => $validator->errors()->all()];
         }
 
-        $recipe->name = $request->name;
-        $recipe->visibility = $request->visibility;
+        //TODO: calculate the total_energy outside the transaction
+        DB::transaction(function () use($recipe, $ingredientsPost, $request) {
+            $recipe->name = $request->name;
+            $recipe->visibility = $request->visibility;
 
-        var_dump($recipe); exit;
+            $recipe->save();
 
+            $ingredientsRecipe = [];
+            $ingredients = $recipe->ingredients;
+            foreach ($ingredients as $ingredient) {
+                if (array_key_exists($ingredient->nbdno, $ingredientsPost)) {
+                    $ingredient->quantity = $ingredientsPost[$ingredient->nbdno]["quantity"];
+                    $ingredient->save();
 
-        $ingredientRecipe->recipe_id = $request->recipe_id;
-        $ingredientRecipe->ndbno = $request->ndbno;
-        $ingredientRecipe->quantity = $request->quantity;
-        //remember to calculate the energy_total
+                    $ingredientsRecipe[] = $ingredient->ndbno;
+                }
+                else {
+                    $ingredient->delete();
+                }
+            }
+            foreach ($ingredientsPost as $ingredientPost) {
+                if (!in_array($ingredientPost["ndbno"], $ingredientsRecipe)) {
+                    $ingredient = new IngredientRecipe();
+                    $ingredient->recipe_id = $recipe->id;
+                    $ingredient->ndbno = $ingredientPost["ndbno"];
+                    $ingredient->quantity = $ingredientPost["quantity"];
+                    $ingredient->save();
+                }
+            }
 
-        $ingredientRecipe->save();
+            //TODO: calculate the total_energy outside the transaction
+            $recipe->energy_total = $this->nutritionInfo($recipe->id)["nutrients"]["208"]["value"];
+            $recipe->save();
+        });
 
-        return ["OK"];
+        if ($action == "i"){
+            return ["OK - 201"];
+        }
+
+        return ["OK - 200"];
     }
 
     public function searchByName($name)
