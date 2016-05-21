@@ -14,4 +14,14 @@
 Route::get('/', function () {
     return view('welcome');
 });
-//teste
+
+
+
+Route::group([
+    'prefix'     => 'api/v1',
+    'namespace' => 'Api'
+], function () {
+
+    Route::get('recipe/{id}/nutrition-info', 'RecipeController@nutritionInfo');
+});
+
