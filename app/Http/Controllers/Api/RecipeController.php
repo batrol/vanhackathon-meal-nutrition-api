@@ -15,6 +15,11 @@ use Validator;
 
 class RecipeController extends Controller
 {
+    public function __construct(RecipeService $recipeService, RecipeRepository $repo)
+    {
+        $this->recipeService = $recipeService;
+        
+    }
 
     // Function responsible for giving Nutrient Information related to a identified Recipe.
     public function nutritionInfo($id)
@@ -30,6 +35,8 @@ class RecipeController extends Controller
             // Get the ingredient identifier and quantity saved.
             $ndbno = $ingredient->ndbno;
             $quantity = $ingredient->quantity;
+
+            // Decorator
 
             // Consumes the USDA api that contains nutrition information about each ingredient.
             $apiKey= 'IlAoU2IJI9TWWN7wmupWrZFwOfbyjOwNmTS2eZsy';
@@ -82,9 +89,11 @@ class RecipeController extends Controller
 	
     public function store(Request $request)
     {
-        $ingredientRecipe = new IngredientRecipe();
+        return DB::transaction(function () use ($request) {
+            $ingredientRecipe = new IngredientRecipe();
 
-        return $this->save($request, $ingredientRecipe);
+            return $this->save($request, $ingredientRecipe);
+        });
     }
 	
     public function update(Request $request, $id)
