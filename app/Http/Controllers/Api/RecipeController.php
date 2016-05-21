@@ -80,33 +80,45 @@ class RecipeController extends Controller
 	
     public function store(Request $request)
     {
-        $ingredientRecipe = new IngredientRecipe();
+        $recipe = new Recipe();
 
-        return $this->save($request, $ingredientRecipe);
+        return $this->save($request, $recipe);
     }
 	
     public function update(Request $request, $id)
     {
-        $ingredientRecipe = IngredientRecipe::findOrFail($id);
+        $recipe = Recipe::findOrFail($id);
 
-        return $this->save($request, $ingredientRecipe);
+        return $this->save($request, $recipe);
     }
 
-    private function save(Request $request, IngredientRecipe $ingredientRecipe)
+    private function save(Request $request, Recipe $recipe)
     {
         $validator = Validator::make($request->all(), [
+            'name' => 'required|notexists:users.id',
+            'visibility' => 'required',
+            'ingredients.*.ndbno' => 'required:integer',
+            'ingredients.*.quantity' => 'required:integer',
+        ]);
+
+        var_dump($_POST);
+        if ($validator->fails()) {
+            return ["status" => "error", "message" => implode(" ", $validator->errors()->all()), "errors" => $validator->errors()->all()];
+        }
+
+        var_dump($validator); exit;
+
+       /* $validator = Validator::make($request->all(), [
             'recipe_id' => 'required',
             'ndbno' => 'required',
             'quantity' => 'required',
-        ]);
+        ]);*/
 
-        if ($validator->fails()) {
-            return ["status" => "error", "message" => $validator->errors()->all()];
-        }
 
         $ingredientRecipe->recipe_id = $request->recipe_id;
         $ingredientRecipe->ndbno = $request->ndbno;
         $ingredientRecipe->quantity = $request->quantity;
+        //remember to calculate the energy_total
 
         $ingredientRecipe->save();
 
