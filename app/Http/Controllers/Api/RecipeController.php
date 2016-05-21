@@ -11,6 +11,8 @@ class RecipeController extends Controller
 {
     public function nutritionInfo($id)
     {
+
+
         return [
             "nutrients" => [
                 [
