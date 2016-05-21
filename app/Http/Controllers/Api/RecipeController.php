@@ -9,6 +9,7 @@ use GoCanada\Models\IngredientRecipe;
 use GuzzleHttp\Client;
 
 use Illuminate\Http\Request;
+use Validator;
 
 
 class RecipeController extends Controller
@@ -79,29 +80,36 @@ class RecipeController extends Controller
 	
     public function store(Request $request)
     {
-		//basic saving test
         $ingredientRecipe = new IngredientRecipe();
 
-        $ingredientRecipe->recipe_id = $request->recipe_id;
-        $ingredientRecipe->ndbno = $request->ndbno;
-        $ingredientRecipe->quantity = $request->quantity;
-
-        $ingredientRecipe->save();
-		
-		return ["OK"];
+        return $this->save($request, $ingredientRecipe);
     }
 	
     public function update(Request $request, $id)
     {
-		//basic saving test
-        $ingredientRecipe = IngredientRecipe::find($id);
+        $ingredientRecipe = IngredientRecipe::findOrFail($id);
+
+        return $this->save($request, $ingredientRecipe);
+    }
+
+    private function save(Request $request, IngredientRecipe $ingredientRecipe)
+    {
+        $validator = Validator::make($request->all(), [
+            'recipe_id' => 'required',
+            'ndbno' => 'required',
+            'quantity' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return ["status" => "error", "message" => $validator->errors()->all()];
+        }
 
         $ingredientRecipe->recipe_id = $request->recipe_id;
         $ingredientRecipe->ndbno = $request->ndbno;
         $ingredientRecipe->quantity = $request->quantity;
 
         $ingredientRecipe->save();
-		
-		return ["OK"];
+
+        return ["OK"];
     }
 }
