@@ -20,6 +20,10 @@ class Recipe extends Model
         return $this->hasMany('GoCanada\Models\IngredientRecipe');
     }
 
+    public function user(){
+        return $this->belongsTo('GoCanada\Models\User');
+    }
+
     public function searchByName($name){
 
         $name = strtolower($name);
@@ -31,17 +35,17 @@ class Recipe extends Model
         return self::where("user_id",[$id])->with('ingredients')->get();
     }
 
-    public function searchByCaloriesMin($min){
+    public function searchByEnergyMin($min){
 
         return self::whereRaw("calories_total >= $min ")->with('ingredients')->get();
     }
 
-    public function searchByCaloriesMax($max){
+    public function searchByEnergyMax($max){
 
         return self::whereRaw("calories_total <= $max ")->with('ingredients')->get();
     }
 
-    public function searchByCaloriesRange($min,$max){
+    public function searchByEnergyRange($min,$max){
 
         return self::whereRaw("calories_total between $min and $max ")->with('ingredients')->get();
     }

@@ -25,9 +25,9 @@ Route::group([
     Route::get('recipe/{id}/nutrition-info', 'RecipeController@nutritionInfo');
     Route::get('recipe/name/{name}/', 'RecipeController@searchByName');
     Route::get('recipe/user/{id}/', 'RecipeController@searchByUser');
-    Route::get('recipe/calories/min/{min}', 'RecipeController@searchByCaloriesMin');
-    Route::get('recipe/calories/max/{max}', 'RecipeController@searchByCaloriesMax');
-    Route::get('recipe/calories/range/{min}/{max}', 'RecipeController@searchByCaloriesRange');
+    Route::get('recipe/energy/min/{min}', 'RecipeController@searchByEnergyMin');
+    Route::get('recipe/energy/max/{max}', 'RecipeController@searchByEnergyMax');
+    Route::get('recipe/energy/range/{min}/{max}', 'RecipeController@searchByEnergyRange');
     Route::post('recipe', 'RecipeController@store');
     Route::put('recipe/{id}', 'RecipeController@update');
     Route::get('recipe/{id}', 'RecipeController@show');
