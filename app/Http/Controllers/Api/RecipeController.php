@@ -303,7 +303,7 @@ class RecipeController extends Controller
         // Set rules for validations
         $rules = [
             'min' => 'numeric|min:1|required',
-            'max' => 'numeric|min:min|required',
+            'max' => "numeric|min:$min|required",
         ];
         // Make validation of response based on rules.
         $validator = Validator::make($input, $rules);
