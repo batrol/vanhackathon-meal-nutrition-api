@@ -3,17 +3,20 @@
 use GoCanada\NdbClient\NdbClient;
 use GoCanada\NdbClient\NdbClientFactory;
 
-class NdbClientFactoryTest extends TestCase
+class NdbClientTest extends TestCase
 {
+
     /**
      * @test
      */
-    public function test_it_builds_from_env()
+    public function it_gets_response()
     {
         $factory   = new NdbClientFactory();
         $ndbClient = $factory->buildFromEnv();
 
-        $ndbno = '28258-123123';
-        $ndbClient->getFoodReport($ndbno);
+        $ndbno = '28258';
+        $response = $ndbClient->getFoodReport($ndbno);
+
+        dd(count($response));
     }
 }
