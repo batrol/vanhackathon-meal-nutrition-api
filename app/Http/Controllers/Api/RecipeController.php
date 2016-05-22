@@ -248,7 +248,7 @@ class RecipeController extends Controller
             "ingredients" => $recipeItem->ingredients
         ];
 
-        return $response;
+        return $this->success(Response::HTTP_OK,NULL,$response);
     }
 
 }
