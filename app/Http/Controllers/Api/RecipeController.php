@@ -163,7 +163,7 @@ class RecipeController extends Controller
     public function searchByName($name)
     {
         $name = strtolower($name);
-        $recipes = $this->recipeRepo->findWhere(    [['name','like','%'.$name.'%']]);
+        $recipes = $this->recipeRepo->findByName($name);
         return $recipes;
     }
 
@@ -217,8 +217,8 @@ class RecipeController extends Controller
     public function show($id) {
 
         // Get all ingredients of the identified Recipe in the database.
-        $Recipe = new Recipe();
-        $recipeItem = $Recipe->findOrFail($id);
+
+        $recipeItem = $this->recipeRepo->find($id);
 
         // Sets the values for response.
         $response = [

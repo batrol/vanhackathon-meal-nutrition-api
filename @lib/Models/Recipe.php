@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Recipe extends Model
 {
+    // defining attribute response types
     protected $casts = [
         'id' => 'int',
         'user_id' => 'int',
@@ -19,10 +20,12 @@ class Recipe extends Model
 
     protected $table = 'recipe';
 
+    // Relashionship with IngredientRecipe
     public function ingredients(){
         return $this->hasMany('GoCanada\Models\IngredientRecipe');
     }
 
+    // Relashionship with User
     public function user(){
         return $this->belongsTo('GoCanada\Models\User');
     }

@@ -213,21 +213,7 @@ class RecipeControllerTest extends TestCase
             $this->assertTrue(isset($ingredient->quantity));
         }
     }
-    
-    public function test_it_responses_all_recipe_search_by_name()
-    {
-        $this->get('/api/v1/recipe/name/');
-        $recipe = $this->getResponseData();
-        $this->assertTrue(isset($recipe));
-        $this->assertTrue(isset($recipe->name));
-        $this->assertTrue(isset($recipe->user_id));
-        $this->assertTrue(isset($recipe->visibility));
-        $this->assertTrue(isset($recipe->energy_total));
-        foreach($recipe->ingredients as $ingredient){
-            $this->assertTrue(isset($ingredient->ndbno));
-            $this->assertTrue(isset($ingredient->quantity));
-        }
-    }
+
 
     /**
      * @test
