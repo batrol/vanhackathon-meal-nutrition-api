@@ -1,7 +1,6 @@
-<?php
+<?php namespace GoCanada\Repository;
 
 interface IngredientsRepositoryInterface
 {
-    public function getNutrientsByIngredient($ndbo);
-    public function getNutrientsByIngredient($ndbo);
+    public function getNutrientsByIngredient($ndbno);
 }
