@@ -88,13 +88,17 @@ class RecipeControllerTest extends TestCase
             ->dontSeeInDatabase('recipe', $expectedData);
     }
 
+    /**
+     * @test
+     * This testcase test if response complete of recipe with ingredients
+     */
     public function test_it_responses_all_recipe_show()
     {
         $this->get('/api/v1/recipe/2');
-        $recipe = $this->getResponseData();
+        $recipe = $this->getResponseData()->data;
         $this->assertTrue(isset($recipe));
         $this->assertTrue(isset($recipe->name));
-        $this->assertTrue(isset($recipe->user_id));
+        $this->assertTrue(isset($recipe->user_name));
         $this->assertTrue(isset($recipe->visibility));
         $this->assertTrue(isset($recipe->energy_total));
         foreach($recipe->ingredients as $ingredient){
@@ -102,6 +106,24 @@ class RecipeControllerTest extends TestCase
             $this->assertTrue(isset($ingredient->quantity));
         }
     }
+
+    /**
+     * @test
+     * This testcase test if response of recipe with an invalid id
+     */
+    public function test_it_fails_on_show_recipe_with_invalid_id()
+    {
+        $expectedData = [
+            'message' => 'No query results for model [GoCanada\\Models\\Recipe].',
+        ];
+
+        $this->get('api/v1/recipe/999')
+            ->seeJsonContains(
+                $expectedData
+            );
+    }
+
+
 }
 
 
