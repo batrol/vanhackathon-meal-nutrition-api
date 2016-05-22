@@ -1,25 +1,17 @@
 <?php
 
-namespace App\Http\Controllers\Api;
-
-use App\Http\Controllers\Controller;
 use GoCanada\Models\Recipe;
 use GoCanada\Models\IngredientRecipe;
 
 use GuzzleHttp\Client;
 
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Request;
-use DB;
-use Validator;
 
 
-class RecipeController extends Controller
+class RecipeControllerTest extends TestCase
 {
-    public function __construct()
-    {
-
-        
-    }
+    use DatabaseTransactions;
 
     // Function responsible for giving Nutrient Information related to a identified Recipe.
     public function nutritionInfo($id)
@@ -87,12 +79,25 @@ class RecipeController extends Controller
 
         return ['nutrients'=>$ingredientsNutritionInfo];
     }
-	
-    public function store(Request $request)
-    {
-        $recipe = new Recipe();
 
-        return $this->save($request, $recipe, "i");
+    /**
+     * @test
+     */
+    public function test_it_fails_on_storing_a_new_recipe_with_a_wrong_visibility_option()
+    {
+        $data = [
+            'name' => 'Perfect Meal',
+            'visibility' => 'PUBLICC',
+        ];
+        $expectedData = [
+            'name' => 'Perfect Meal',
+            'visibility' => 'PUBLICC',
+        ];
+
+        $this->post('api/v1/recipe', $data)
+            //->seeStatusCode(\Illuminate\Http\Response::HTTP_CREATED)
+            ->seeStatusCode(\Illuminate\Http\Response::HTTP_OK)
+            ->seeInDatabase('recipe', $expectedData);
     }
 	
     public function update(Request $request, $id)

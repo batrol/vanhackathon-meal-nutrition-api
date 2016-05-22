@@ -104,19 +104,23 @@ class RecipeController extends Controller
 
     private function save(Request $request, Recipe $recipe, $action)
     {
+        $data = $request->all();
         $rules = [
             'name' => 'required|unique:recipe',
             'visibility' => 'required',
+            'ingredients' => 'required',
         ];
         $ingredientsPost = [];
-        foreach ($request->get('ingredients') as $k => $v) {
-            $rules['ingredients.' . $k . '.ndbno'] = 'required';
-            $rules['ingredients.' . $k . '.quantity'] = 'required|numeric';
+        if (array_key_exists('ingredients', $data)) {
+            foreach ($request->get('ingredients') as $k => $v) {
+                $rules['ingredients.' . $k . '.ndbno'] = 'required';
+                $rules['ingredients.' . $k . '.quantity'] = 'required|numeric';
 
-            $ingredientsPost[$v["ndbno"]] = $v;
+                $ingredientsPost[$v["ndbno"]] = $v;
+            }
         }
 
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) {
             return ["status" => "error", "message" => implode(" ", $validator->errors()->all()), "errors" => $validator->errors()->all()];
