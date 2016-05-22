@@ -80,9 +80,7 @@ class RecipeController extends Controller
                         'group' => $nutrient['group']
                     ];
                 }
-
             }
-
         }
 
         return ['nutrients'=>$ingredientsNutritionInfo];

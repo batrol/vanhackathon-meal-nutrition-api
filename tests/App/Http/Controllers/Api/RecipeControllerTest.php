@@ -12,7 +12,9 @@ class RecipeControllerTest extends TestCase
     {
         $this->get('/api/v1/recipe/1/nutrition-info');
         $responseData = $this->getResponseData();
+
         $this->assertTrue(isset($responseData->nutrients));
+
         foreach($responseData->nutrients as $nutrient){
             $this->assertTrue(isset($nutrient->name));
             $this->assertTrue(isset($nutrient->value));
