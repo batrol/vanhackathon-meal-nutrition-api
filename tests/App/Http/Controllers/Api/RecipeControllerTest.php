@@ -31,6 +31,22 @@ class RecipeControllerTest extends TestCase
         }
     }
 
+    public function test_it_responses_all_recipe_search_by_name()
+    {
+        $this->get('/api/v1/recipe/1/nutrition-info');
+        $responseData = $this->getResponseData();
+
+        $nutrients = $responseData->data->nutrients;
+        $this->assertTrue(isset($nutrients));
+
+        foreach($nutrients as $nutrient){
+            $this->assertTrue(isset($nutrient->name));
+            $this->assertTrue(isset($nutrient->value));
+            $this->assertTrue(isset($nutrient->unit));
+            $this->assertTrue(isset($nutrient->group));
+        }
+    }
+
     /**
      * @test
      */

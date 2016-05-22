@@ -37,13 +37,13 @@ class RecipeController extends Controller
 
         $ingredientsNutritionInfo = $this->recipeRepo->sumNutritionInfo($ingredients, $this->ingredientsRepo);
 
+        // return success with json of nutrients
         return $this->success(Response::HTTP_OK, null,['nutrients' => $ingredientsNutritionInfo]);
     }
 
     public function store(Request $request)
     {
         $recipe = new Recipe();
-
         return $this->save($request, $recipe, "i");
     }
 
@@ -122,53 +122,138 @@ class RecipeController extends Controller
         return $this->success(Response::HTTP_OK, "Recipe with id {$recipe->id} updated!", ["id" => $recipe->id]);
     }
 
+    /**
+     * @param $name
+     * @return json
+     */
     public function searchByName($name)
     {
+        // changes string to lower so an insensitve case search can be done
         $name = strtolower($name);
+
+        //set the input values
+        $input = [
+            "name" => $name
+        ];
+
+        // Set rules for validations
+        $rules = [
+            'name' => 'string|min:3|required',
+        ];
+
+        // Make validation of response based on rules.
+        $validator = Validator::make($input, $rules);
+
+        // If fails return message. Or return response with header http.
+        if ($validator->fails()) {
+            return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
+        }
+
         $recipes = $this->recipeRepo->findByName($name);
-        return $recipes;
+
+        return $this->success(Response::HTTP_OK, null, ["recipes" => $recipes]);
     }
 
     public function searchByUser($id)
     {
-        //TODO: check if it is number
-        //TODO: check response in error
-        if (!is_numeric($id) || $id<0){
-            return $this->error(Response::HTTP_BAD_REQUEST, "Wrong arguments!");
+
+        //set the input values
+        $input = [
+            "id" => $id
+        ];
+
+        // Set rules for validations
+        $rules = [
+            'id' => 'numeric|min:1|required',
+        ];
+        // Make validation of response based on rules.
+        $validator = Validator::make($input, $rules);
+
+        // If fails return message. Or return response with header http.
+        if ($validator->fails()) {
+            return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
         }
-        $recipes = $this->recipeRepo->find($id);
-        return $recipes;
+
+        // retrieves recipes with user id
+        $recipes = $this->recipeRepo->findByField('user_id',$id);
+
+        return $this->success(Response::HTTP_OK, null, ["recipes" => $recipes]);
 
     }
 
     public function searchByEnergyMin($min)
     {
-        //TODO: check response in error
-        if (!is_numeric($min) || $min<0){
-            return $this->error(Response::HTTP_BAD_REQUEST, "Wrong arguments!");
+
+        ///set the input values
+        $input = [
+            "min" => $min
+        ];
+
+        // Set rules for validations
+        $rules = [
+            'min' => 'numeric|min:1|required',
+        ];
+        // Make validation of response based on rules.
+        $validator = Validator::make($input, $rules);
+
+        // If fails return message. Or return response with header http.
+        if ($validator->fails()) {
+            return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
         }
+
         $recipes = $this->recipeRepo->findWhere([['energy_total','>=',$min]]);
-        return $recipes;
+
+        return $this->success(Response::HTTP_OK, null, ["recipes" => $recipes]);
     }
 
     public function searchByEnergyMax($max)
     {
-        //TODO: check response in error
-        if ( !is_numeric($max) || $max<0){
-            return $this->error(Response::HTTP_BAD_REQUEST, "Wrong arguments!");
+
+        ///set the input values
+        $input = [
+            "max" => $max
+        ];
+
+        // Set rules for validations
+        $rules = [
+            'max' => 'numeric|min:1|required',
+        ];
+        // Make validation of response based on rules.
+        $validator = Validator::make($input, $rules);
+
+        // If fails return message. Or return response with header http.
+        if ($validator->fails()) {
+            return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
         }
         $recipes = $this->recipeRepo->findWhere([['energy_total','<=',$max]]);
-        return $recipes;
+
+        return $this->success(Response::HTTP_OK, null, ["recipes" => $recipes]);
     }
 
     public function searchByEnergyRange($min,$max)
     {
-        //TODO: check response in error
-        if (!is_numeric($min) || !is_numeric($max) || $min<0 || $max<0){
-            return $this->error(Response::HTTP_BAD_REQUEST, "Wrong arguments!");
+        ///set the input values
+        $input = [
+            "min" => $min,
+            "max" => $max
+        ];
+
+        // Set rules for validations
+        $rules = [
+            'min' => 'numeric|min:1|required',
+            'max' => 'numeric|min:min|required',
+        ];
+        // Make validation of response based on rules.
+        $validator = Validator::make($input, $rules);
+
+        // If fails return message. Or return response with header http.
+        if ($validator->fails()) {
+            return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
         }
+
         $recipes = $this->recipeRepo->findWhere([['energy_total','>=',$min],['energy_total','<=',$max]]);
-        return $recipes;
+
+        return $this->success(Response::HTTP_OK, null, ["recipes" => $recipes]);
     }
 
     /**
