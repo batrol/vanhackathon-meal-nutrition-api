@@ -48,7 +48,7 @@ class RecipeController extends Controller
 
             //TODO: check
             if ($response->getStatusCode() != 200){
-                return $this->error(400, 'Connection failed!');
+                return $this->error(Response::HTTP_BAD_REQUEST, 'Connection failed!');
             }
             $apiIngredient = json_decode($responseBody, true);
 
@@ -119,7 +119,7 @@ class RecipeController extends Controller
         $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) {
-            return $this->error(400, implode(" ", $validator->errors()->all()), $validator->errors()->all());
+            return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
         }
 
         //TODO: calculate the total_energy outside the transaction
