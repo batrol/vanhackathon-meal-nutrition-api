@@ -17,7 +17,7 @@ class ApiResponse
     public function toArray()
     {
         return response()->json([
-            'status' => $this->statusCode,
+            'status' => $this->status,
             'message' => $this->message,
             'data' => $this->data,
         ], $this->statusCode);
