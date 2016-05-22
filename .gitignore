@@ -1,5 +1,6 @@
 /vendor
 /node_modules
+/storage/database.sqlite
 Homestead.yaml
 Homestead.json
 .env

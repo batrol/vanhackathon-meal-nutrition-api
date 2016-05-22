@@ -1,21 +1,22 @@
-<?php namespace GoCanada\Repositories;
+<?php
 
+
+namespace GoCanada\Repositories;
 use GoCanada\Models\Recipe;
+use Prettus\Repository\Eloquent\BaseRepository;
 
-class RecipeRepository implements RecipeRepositoryInterface
+class RecipeRepository extends BaseRepository  implements RecipeRepositoryInterface
 {
-    public function getIngredientsByRecipe($id){
+    protected $fieldSearchable = [
+        'id',
+        'name' => 'like',
+        'energy_total'
 
+    ];
+
+    public function model()
+    {
+        return Recipe::class;
     }
 
-    public function getNutritionalInformationByRecipe($id){
-
-    }
-
-    public function getRecipe($id = null){
-        if ($id){
-            return Recipe::findOrFail($id);
-        }
-        return new Recipe();
-    }
 }
