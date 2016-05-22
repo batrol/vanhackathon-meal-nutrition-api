@@ -6,24 +6,27 @@ use App\Http\Controllers\Controller;
 use GoCanada\Models\Recipe;
 use GoCanada\Models\IngredientRecipe;
 
+use GoCanada\Popos\Nutrient;
 use GoCanada\Repositories\IngredientsRepositoryInterface;
 use GuzzleHttp\Client;
 
 use Illuminate\Http\Request;
 use DB;
+use Illuminate\Http\Response;
 use Validator;
 
 
 class RecipeController extends Controller
 {
-    private $ingredientsRepository;
+    private $ingredientsRepo;
 
-    public function __construct(IngredientsRepositoryInterface $ingredientsRepository)
+    public function __construct(IngredientsRepositoryInterface $ingredientsRepo)
     {
-        $this->ingredientsRepository = $ingredientsRepository;
+        $this->ingredientsRepo = $ingredientsRepo;
+        
     }
 
-    // Method responsible for giving Nutrient Information related to a identified Recipe.
+    // Function responsible for giving Nutrient Information related to a identified Recipe.
     public function nutritionInfo($id)
     {
         // Get all ingredients of the identified Recipe in the database.
@@ -31,26 +34,40 @@ class RecipeController extends Controller
         $Recipe = new Recipe();
         $ingredients = $Recipe->findOrFail($id)->ingredients;
 
-        $ingredientsNutritionInfo = [];
-
         // Iterates over ingredients to fill the returning array.
-        foreach ($ingredients as $ingredient) {
+        foreach($ingredients as $ingredient){
 
             // Get the ingredient identifier and quantity saved.
             $ndbno    = $ingredient->ndbno;
             $quantity = $ingredient->quantity;
 
-            $nutrients = $this->ingredientsRepository->getNutrientsByIngredient($ndbno);
 
+            $nutrients = $this->ingredientsRepo->getNutrientsByIngredient($ndbno);
+
+            /** @var Nutrient $nutrient */
             foreach ($nutrients as $nutrient) {
-                $ingredientsNutritionInfo[] = [
-                    'nutrient_id' => $nutrient->getId(),
-                    'name'        => $nutrient->getName(),
-                    'group'       => $nutrient->getGroup(),
-                    'value'       => $nutrient->getValue(),
-                    'unit'        => $nutrient->getUnit(),
-                ];
+
+                $nutrientId = $nutrient->getId();
+                //var_dump($nutrient);
+                // Checks if nutrient is already existent in array
+                if(isset($ingredientsNutritionInfo[$nutrientId])){
+
+                    // if nutrient exists add to existing value
+                    $nutrientOldValue = $ingredientsNutritionInfo[$nutrientId]['value'];
+                    $ingredientsNutritionInfo[$nutrientId]['value'] = $nutrientOldValue+($nutrient->getValue()*$quantity);
+
+                }else{
+
+                    // Sets the values for that nutrient multiplying by the ingredient quantity (total amount).
+                    $ingredientsNutritionInfo[$nutrientId]= [
+                        'name'  => $nutrient->getName(),
+                        'value' => $nutrient->getValue() * $quantity,
+                        'unit'  => $nutrient->getUnit(),
+                        'group' => $nutrient->getGroup()
+                    ];
+                }
             }
+
         }
 
         return ['nutrients' => $ingredientsNutritionInfo];
@@ -72,22 +89,26 @@ class RecipeController extends Controller
 
     private function save(Request $request, Recipe $recipe, $action)
     {
+        $data = $request->all();
         $rules = [
             'name' => 'required|unique:recipe',
             'visibility' => 'required',
+            'ingredients' => 'required',
         ];
         $ingredientsPost = [];
-        foreach ($request->get('ingredients') as $k => $v) {
-            $rules['ingredients.' . $k . '.ndbno'] = 'required';
-            $rules['ingredients.' . $k . '.quantity'] = 'required|numeric';
+        if (array_key_exists('ingredients', $data)) {
+            foreach ($request->get('ingredients') as $k => $v) {
+                $rules['ingredients.' . $k . '.ndbno'] = 'required';
+                $rules['ingredients.' . $k . '.quantity'] = 'required|numeric';
 
-            $ingredientsPost[$v["ndbno"]] = $v;
+                $ingredientsPost[$v["ndbno"]] = $v;
+            }
         }
 
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) {
-            return ["status" => "error", "message" => implode(" ", $validator->errors()->all()), "errors" => $validator->errors()->all()];
+            return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
         }
 
         //TODO: calculate the total_energy outside the transaction
@@ -126,10 +147,10 @@ class RecipeController extends Controller
         });
 
         if ($action == "i"){
-            return ["OK - 201"];
+            $this->success(Response::HTTP_CREATED, "Recipe stored with id: {$recipe->id}!");
         }
 
-        return ["OK - 200"];
+        $this->success(Response::HTTP_OK, "Recipe with id {$recipe->id} updated!");
     }
 
     public function searchByName($name)
