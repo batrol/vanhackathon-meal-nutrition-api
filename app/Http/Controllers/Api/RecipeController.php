@@ -225,7 +225,8 @@ class RecipeController extends Controller
      * @return array
      */
     public function show($id) {
-
+        //TODO: validations
+        
         $Recipe = new Recipe();
         $recipeItem = $Recipe->findOrFail($id);
 
@@ -237,9 +238,19 @@ class RecipeController extends Controller
             "ingredients" => $recipeItem->ingredients
         ];
 
-        return $this->success(Response::HTTP_OK,NULL,$response);
+        $rules = [
+            'name' => 'string|required',
+            'visibility' => 'string|required',
+            'energy_total' => 'numeric|required',
+        ];
+
+        $validator = Validator::make($response, $rules);
+
+        if ($validator->fails()) {
+            return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
+        } else {
+            return $this->success(Response::HTTP_OK, NULL, $response);
+        }
     }
 
 }
-
-
