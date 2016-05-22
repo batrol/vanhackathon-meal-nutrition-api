@@ -2,8 +2,6 @@
 
 namespace GoCanada\Repositories;
 
-use GoCanada\NdbClient\NdbClientFactory;
-use GoCanada\Popos\Nutrient;
 use Cache;
 
 class IngredientsCacheDecoratorRepository extends IngredientsRepository
