@@ -177,36 +177,18 @@ class RecipeController extends Controller
      * This function show the recipe with ingredients.
      */
     public function show($id) {
-
         // Get all ingredients of the identified Recipe in the database.
-
         $recipeItem = $this->recipeRepo->find($id);
 
-        // Sets the values for response.
-        $response = [
+        //returns the recipe, all its ingredients and its nutrient info.
+        return $this->success(Response::HTTP_OK, NULL, [
             "name" => $recipeItem->name,
             "user_name" => $recipeItem->user->name,
             "visibility" => $recipeItem->visibility,
             "energy_total" => $recipeItem->energy_total,
-            "ingredients" => $recipeItem->ingredients
-        ];
-
-        // Set rules for validations
-        $rules = [
-            'status' => 'string|exists:success',
-            'name' => 'string|required',
-            'visibility' => 'string|required',
-            'energy_total' => 'numeric|required',
-        ];
-        // Make validation of response based on rules.
-        $validator = Validator::make($response, $rules);
-
-        // If fails return message. Or return response with header http.
-        if ($validator->fails()) {
-            return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
-        } else {
-            return $this->success(Response::HTTP_OK, NULL, $response);
-        }
+            "ingredients" => $recipeItem->ingredients,
+            "nutrientInfo" => $this->recipeRepo->sumNutritionInfo($recipeItem->ingredients, $this->ingredientsRepo),
+        ]);
     }
 
 }
