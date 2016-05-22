@@ -8,7 +8,6 @@ use GoCanada\Models\IngredientRecipe;
 
 use GoCanada\Popos\Nutrient;
 use GoCanada\Repositories\IngredientsRepositoryInterface;
-use GuzzleHttp\Client;
 
 use Illuminate\Http\Request;
 use DB;
@@ -23,7 +22,7 @@ class RecipeController extends Controller
     public function __construct(IngredientsRepositoryInterface $ingredientsRepo)
     {
         $this->ingredientsRepo = $ingredientsRepo;
-        
+
     }
 
     // Function responsible for giving Nutrient Information related to a identified Recipe.
@@ -68,19 +67,18 @@ class RecipeController extends Controller
                     ];
                 }
             }
-
         }
 
         return ['nutrients' => array_values($ingredientsNutritionInfo)];
     }
-	
+
     public function store(Request $request)
     {
         $recipe = new Recipe();
 
         return $this->save($request, $recipe, "i");
     }
-	
+
     public function update(Request $request, $id)
     {
         $recipe = Recipe::findOrFail($id);

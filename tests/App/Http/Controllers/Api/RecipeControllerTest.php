@@ -19,7 +19,9 @@ class RecipeControllerTest extends TestCase
     {
         $this->get('/api/v1/recipe/1/nutrition-info');
         $responseData = $this->getResponseData();
+
         $this->assertTrue(isset($responseData->nutrients));
+
         foreach($responseData->nutrients as $nutrient){
             $this->assertTrue(isset($nutrient->name));
             $this->assertTrue(isset($nutrient->value));
@@ -84,12 +86,6 @@ class RecipeControllerTest extends TestCase
         $this->post('api/v1/recipe', $data)
             ->seeStatusCode(\Illuminate\Http\Response::HTTP_BAD_REQUEST)
             ->dontSeeInDatabase('recipe', $expectedData);
-    }
-
-    public function update(Request $request, $id)
-    {
-        $recipe = Recipe::findOrFail($id);
-        return $this->save($request, $recipe, "u");
     }
 
     public function test_it_responses_all_recipe_show()
