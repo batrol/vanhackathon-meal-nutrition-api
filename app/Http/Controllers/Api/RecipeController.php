@@ -10,6 +10,7 @@ use GuzzleHttp\Client;
 
 use Illuminate\Http\Request;
 use DB;
+use Illuminate\Http\Response;
 use Validator;
 
 
@@ -47,12 +48,7 @@ class RecipeController extends Controller
 
             //TODO: check
             if ($response->getStatusCode() != 200){
-                return $this->returnWithError('conexao falhou', 400);
-//                $returnData = array(
-//                    'status' => 'error',
-//                    'message' => 'No Api Response'
-//                );
-//                return response()->json($returnData, 500);
+                return $this->error(400, 'Connection failed!');
             }
             $apiIngredient = json_decode($responseBody, true);
 
@@ -123,7 +119,7 @@ class RecipeController extends Controller
         $validator = Validator::make($data, $rules);
 
         if ($validator->fails()) {
-            return ["status" => "error", "message" => implode(" ", $validator->errors()->all()), "errors" => $validator->errors()->all()];
+            return $this->error(400, implode(" ", $validator->errors()->all()), $validator->errors()->all());
         }
 
         //TODO: calculate the total_energy outside the transaction
@@ -162,10 +158,10 @@ class RecipeController extends Controller
         });
 
         if ($action == "i"){
-            return ["OK - 201"];
+            $this->success(Response::HTTP_CREATED);
         }
 
-        return ["OK - 200"];
+        $this->success(Response::HTTP_OK);
     }
 
     public function searchByName($name)

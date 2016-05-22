@@ -13,71 +13,23 @@ class RecipeControllerTest extends TestCase
 {
     use DatabaseTransactions;
 
-    // Function responsible for giving Nutrient Information related to a identified Recipe.
-    public function nutritionInfo($id)
+    /**
+     * @test
+     */
+    public function test_it_stores_a_new_recipe_and_its_ingredients()
     {
-        // Get all ingredients of the identified Recipe in the database.
-        // Also checks if there is no matching result for the $id and gives error response in that case.
-        $Recipe = new Recipe();
-        $ingredients = $Recipe->findOrFail($id)->ingredients;
+        $data = [
+            'name' => 'Perfect Meal',
+            'visibility' => 'PUBLIC',
+        ];
+        $expectedData = [
+            'name' => 'Perfect Meal',
+            'visibility' => 'PUBLIC',
+        ];
 
-        // Iterates over ingredients to fill the returning array.
-        foreach($ingredients as $ingredient){
-
-            // Get the ingredient identifier and quantity saved.
-            $ndbno = $ingredient->ndbno;
-            $quantity = $ingredient->quantity;
-
-            // Decorator
-
-            // Consumes the USDA api that contains nutrition information about each ingredient.
-            $apiKey= 'IlAoU2IJI9TWWN7wmupWrZFwOfbyjOwNmTS2eZsy';
-            $apiUrl = 'http://api.nal.usda.gov/ndb/reports/?ndbno='.$ndbno.'&type=f&format=json&api_key='.$apiKey;
-            $client = new Client();
-            $response = $client->request('GET', $apiUrl);
-            $responseBody =  $response->getBody();
-
-            //TODO: check
-            if ($response->getStatusCode() != 200){
-                return $this->returnWithError('conexao falhou', 400);
-//                $returnData = array(
-//                    'status' => 'error',
-//                    'message' => 'No Api Response'
-//                );
-//                return response()->json($returnData, 500);
-            }
-            $apiIngredient = json_decode($responseBody, true);
-
-            // Iterates over nutrients to find nutrients information and fills array that will be returned.
-            $nutrients = $apiIngredient['report']['food']['nutrients'];
-
-            foreach( $nutrients as $nutrient){
-
-                $nutrientId = $nutrient['nutrient_id'];
-                //var_dump($nutrient);
-                // Checks if nutrient is already existent in array
-                if(isset($ingredientsNutritionInfo[$nutrientId])){
-
-                    // if nutrient exists add to existing value
-                    $nutrientOldValue = $ingredientsNutritionInfo[$nutrientId]['value'];
-                    $ingredientsNutritionInfo[$nutrientId]['value'] = $nutrientOldValue+($nutrient['value']*$quantity);
-
-                }else{
-
-                    // Sets the values for that nutrient multiplying by the ingredient quantity (total amount).
-                    $ingredientsNutritionInfo[$nutrientId]= [
-                        'name'  => $nutrient['name'],
-                        'value' => $nutrient['value']*$quantity,
-                        'unit'  => $nutrient['unit'],
-                        'group' => $nutrient['group']
-                    ];
-                }
-
-            }
-
-        }
-
-        return ['nutrients'=>$ingredientsNutritionInfo];
+        $this->post('api/v1/recipe', $data)
+            ->seeStatusCode(\Illuminate\Http\Response::HTTP_CREATED)
+            ->seeInDatabase('recipe', $expectedData);
     }
 
     /**
@@ -95,11 +47,10 @@ class RecipeControllerTest extends TestCase
         ];
 
         $this->post('api/v1/recipe', $data)
-            //->seeStatusCode(\Illuminate\Http\Response::HTTP_CREATED)
-            ->seeStatusCode(\Illuminate\Http\Response::HTTP_OK)
-            ->seeInDatabase('recipe', $expectedData);
+            ->seeStatusCode(\Illuminate\Http\Response::HTTP_BAD_REQUEST)
+            ->dontSeeInDatabase('recipe', $expectedData);
     }
-	
+
     public function update(Request $request, $id)
     {
         $recipe = Recipe::findOrFail($id);
