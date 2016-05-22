@@ -7,5 +7,4 @@ use Prettus\Repository\Contracts\RepositoryInterface;
 
 interface RecipeRepositoryInterface extends RepositoryInterface
 {
-
 }
