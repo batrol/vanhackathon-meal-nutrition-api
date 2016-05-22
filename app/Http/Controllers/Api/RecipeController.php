@@ -22,7 +22,7 @@ class RecipeController extends Controller
     public function __construct(IngredientsRepositoryInterface $ingredientsRepo)
     {
         $this->ingredientsRepo = $ingredientsRepo;
-        
+
     }
 
     // Function responsible for giving Nutrient Information related to a identified Recipe.
@@ -39,6 +39,7 @@ class RecipeController extends Controller
             // Get the ingredient identifier and quantity saved.
             $ndbno    = $ingredient->ndbno;
             $quantity = $ingredient->quantity;
+
 
             $nutrients = $this->ingredientsRepo->getNutrientsByIngredient($ndbno);
 
@@ -70,14 +71,14 @@ class RecipeController extends Controller
 
         return ['nutrients' => array_values($ingredientsNutritionInfo)];
     }
-	
+
     public function store(Request $request)
     {
         $recipe = new Recipe();
 
         return $this->save($request, $recipe, "i");
     }
-	
+
     public function update(Request $request, $id)
     {
         $recipe = Recipe::findOrFail($id);
