@@ -1,11 +1,14 @@
-<?php
-
-namespace GoCanada\Models;
+<?php namespace GoCanada\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
 class Recipe extends Model
 {
+    protected $casts = [
+        'id' => 'int',
+        'user_id' => 'int',
+        'energy_total'=>'float'
+    ];
 
     protected $fillable = [
         'name',
@@ -35,19 +38,19 @@ class Recipe extends Model
         return self::where("user_id",[$id])->with('ingredients')->get();
     }
 
-    public function searchByCaloriesMin($min){
+    public function searchByEnergyMin($min){
 
-        return self::whereRaw("calories_total >= $min ")->with('ingredients')->get();
+        return self::whereRaw("energy_total >= $min ")->with('ingredients')->get();
     }
 
-    public function searchByCaloriesMax($max){
+    public function searchByEnergyMax($max){
 
-        return self::whereRaw("calories_total <= $max ")->with('ingredients')->get();
+        return self::whereRaw("energy_total <= $max ")->with('ingredients')->get();
     }
 
-    public function searchByCaloriesRange($min,$max){
+    public function searchByEnergyRange($min,$max){
 
-        return self::whereRaw("calories_total between $min and $max ")->with('ingredients')->get();
+        return self::whereRaw("energy_total between $min and $max ")->with('ingredients')->get();
     }
 
 }

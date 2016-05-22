@@ -1,6 +1,4 @@
-<?php
-
-namespace GoCanada\Models;
+<?php namespace GoCanada\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,6 +9,11 @@ class IngredientRecipe extends Model
      *
      * @var string
      */
+    protected $casts = [
+        'id' => 'int',
+        'recipe_id' => 'int',
+        'quantity'=>'float'
+    ];
     protected $table = 'ingredient_recipe';
 
     /**
