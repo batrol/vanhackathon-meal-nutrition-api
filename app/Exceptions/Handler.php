@@ -3,10 +3,9 @@
 namespace App\Exceptions;
 
 use Exception;
-use GoCanada\Popos\ApiError;
+use GoCanada\Popos\ApiResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 
 class Handler extends ExceptionHandler
@@ -52,30 +51,28 @@ class Handler extends ExceptionHandler
             return response()->json($error, 500);
         }
 
-        $apiError = new ApiError($e->getMessage(), 500);
+        $apiResponse = new ApiResponse($e->getMessage(), 500, "error");
 
         switch (true) {
             case $e instanceof BaseException: {
-                $apiError->setStatusCode($e->getHttpStatus());
-                $apiError->setMessage($e->getMessage());
-                return response()->json($apiError->toArray(), $apiError->getStatusCode());
+                $apiResponse->setStatusCode($e->getHttpStatus());
+                $apiResponse->setMessage($e->getMessage());
+
+                return $apiResponse->toResponse();
             }
 
             case $e instanceof ModelNotFoundException: {
-                $apiError->setMessage('Requested information not found');
-                $apiError->setStatusCode(404);
+                $apiResponse->setStatusCode(404);
+                $apiResponse->setMessage('Requested information not found');
 
-                return response()->json($apiError->toArray(), $apiError->getStatusCode());
+                return $apiResponse->toResponse();
             }
 
             default: {
-                $apiError->setMessage('Something went wrong');
-                $apiError->setStatusCode(500);
+                $apiResponse->setMessage('Something went wrong');
 
-                return response()->json($apiError->toArray(), $apiError->getStatusCode());
+                return $apiResponse->toResponse();
             }
         }
-
-        return parent::render($request, $e);
     }
 }

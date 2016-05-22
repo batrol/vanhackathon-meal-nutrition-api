@@ -16,6 +16,16 @@ class ApiResponse
 
     public function toArray()
     {
+        return [
+            'status_code' => $this->statusCode,
+            'status' => $this->status,
+            'message' => $this->message,
+            'data' => $this->data,
+        ];
+    }
+
+    public function toResponse()
+    {
         return response()->json([
             'status' => $this->status,
             'message' => $this->message,
@@ -33,7 +43,7 @@ class ApiResponse
 
     /**
      * @param mixed $message
-     * @return ApiError
+     * @return ApiResponse
      */
     public function setMessage($message)
     {
@@ -51,7 +61,7 @@ class ApiResponse
 
     /**
      * @param mixed $statusCode
-     * @return ApiError
+     * @return ApiResponse
      */
     public function setStatusCode($statusCode)
     {

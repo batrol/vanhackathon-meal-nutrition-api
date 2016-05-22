@@ -16,13 +16,13 @@ abstract class Controller extends BaseController
         $apiResponse = new ApiResponse($message, $statusCode, 'success');
         $apiResponse->setData($data);
 
-        return $apiResponse->toArray();
+        return $apiResponse->toResponse();
     }
 
     protected function error($statusCode, $message = null, $data = null){
         $apiResponse = new ApiResponse($message, $statusCode, 'error');
         $apiResponse->setData($data);
 
-        return $apiResponse->toArray();
+        return $apiResponse->toResponse();
     }
 }
