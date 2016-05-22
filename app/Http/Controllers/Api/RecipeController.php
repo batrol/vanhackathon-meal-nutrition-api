@@ -71,7 +71,7 @@ class RecipeController extends Controller
                 $rules['ingredients.' . $k . '.ndbno'] = 'required';
                 $rules['ingredients.' . $k . '.quantity'] = 'required|numeric';
 
-                $ingredientsPost[$v["ndbno"]] = $v;
+                $ingredientsPost[$v["ndbno"]] = (object)$v;
             }
         }
 
@@ -80,14 +80,15 @@ class RecipeController extends Controller
         if ($validator->fails()) {
             return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
         }
-        
-        //$this
+
+        $ingredientsNutritionInfo = $this->recipeRepo->sumNutritionInfo($ingredientsPost, $this->ingredientsRepo);
 
         //TODO: calculate the total_energy outside the transaction
-        DB::transaction(function () use($recipe, $ingredientsPost, $request) {
+        DB::transaction(function () use($recipe, $ingredientsPost, $request, $ingredientsNutritionInfo) {
             $recipe->user_id = $request->user_id;
             $recipe->name = $request->name;
             $recipe->visibility = $request->visibility;
+            $recipe->energy_total = $ingredientsNutritionInfo["208"]["value"];
 
             $recipe->save();
 
@@ -95,7 +96,7 @@ class RecipeController extends Controller
             $ingredients = $recipe->ingredients;
             foreach ($ingredients as $ingredient) {
                 if (array_key_exists($ingredient->nbdno, $ingredientsPost)) {
-                    $ingredient->quantity = $ingredientsPost[$ingredient->nbdno]["quantity"];
+                    $ingredient->quantity = $ingredientsPost[$ingredient->nbdno]->quantity;
                     $ingredient->save();
 
                     $ingredientsRecipe[] = $ingredient->ndbno;
@@ -105,18 +106,14 @@ class RecipeController extends Controller
                 }
             }
             foreach ($ingredientsPost as $ingredientPost) {
-                if (!in_array($ingredientPost["ndbno"], $ingredientsRecipe)) {
+                if (!in_array($ingredientPost->ndbno, $ingredientsRecipe)) {
                     $ingredient = new IngredientRecipe();
                     $ingredient->recipe_id = $recipe->id;
-                    $ingredient->ndbno = $ingredientPost["ndbno"];
-                    $ingredient->quantity = $ingredientPost["quantity"];
+                    $ingredient->ndbno = $ingredientPost->ndbno;
+                    $ingredient->quantity = $ingredientPost->quantity;
                     $ingredient->save();
                 }
             }
-
-            //TODO: calculate the total_energy outside the transaction
-            $recipe->energy_total = $this->nutritionInfo($recipe->id)->getData("data")["data"]["nutrients"]["208"]["value"];
-            $recipe->save();
         });
 
         if ($action == "i"){
