@@ -12,7 +12,10 @@ class RecipeSeeder extends Seeder
      */
     public function run()
     {
-        DB::unprepared("truncate table recipe");
+        if (DB::getDriverName() == 'sqlite')
+            DB::unprepared('delete from recipe;');
+        else //case 'mysql'
+            DB::unprepared('truncate table recipe');
 
         $faker = Faker\Factory::create();
 

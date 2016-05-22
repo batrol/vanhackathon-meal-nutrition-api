@@ -60,6 +60,11 @@ return [
                 PDO::ATTR_EMULATE_PREPARES   => true
             ]
         ],
+        'sqlite' => [
+            'driver'   => 'sqlite',
+            'database' => storage_path().'/database.sqlite',
+            'prefix'   => '',
+        ],
     ],
 
     /*

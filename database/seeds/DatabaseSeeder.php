@@ -14,7 +14,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        DB::unprepared('SET FOREIGN_KEY_CHECKS = 0;');
+        if (DB::getDriverName() == 'sqlite')
+            DB::unprepared('PRAGMA foreign_keys = OFF;');
+        else //case 'mysql'
+            DB::unprepared('SET FOREIGN_KEY_CHECKS = 0;');
 
         Model::unguard();
 
@@ -24,6 +27,9 @@ class DatabaseSeeder extends Seeder
 
         Model::reguard();
 
-        DB::unprepared('SET FOREIGN_KEY_CHECKS = 1;');
+        if (DB::getDriverName() == 'sqlite')
+            DB::unprepared('PRAGMA foreign_keys = ON;');
+        else //case 'mysql'
+            DB::unprepared('SET FOREIGN_KEY_CHECKS = 1;');
     }
 }

@@ -12,7 +12,10 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        DB::unprepared("truncate table user");
+        if (DB::getDriverName() == 'sqlite')
+            DB::unprepared('delete from user;');
+        else //case 'mysql'
+            DB::unprepared('truncate table user');
 
         $faker = Faker\Factory::create();
 
