@@ -33,44 +33,10 @@ class RecipeController extends Controller
     {
         // Get all ingredients of the identified Recipe in the database.
         // Also checks if there is no matching result for the $id and gives error response in that case.
-        $Recipe = new Recipe();
-        $ingredients = $Recipe->findOrFail($id)->ingredients;
+        $recipe = new Recipe();
+        $ingredients = $recipe->findOrFail($id)->ingredients;
 
-        // Iterates over ingredients to fill the returning array.
-        foreach($ingredients as $ingredient){
-
-            // Get the ingredient identifier and quantity saved.
-            $ndbno    = $ingredient->ndbno;
-            $quantity = $ingredient->quantity;
-
-            //TODO:COMMENT
-            $nutrients = $this->ingredientsRepo->getNutrientsByIngredient($ndbno);
-
-            /** @var Nutrient $nutrient */
-            foreach ($nutrients as $nutrient) {
-
-                $nutrientId = $nutrient->getId();
-                //var_dump($nutrient);
-                // Checks if nutrient is already existent in array
-                if(isset($ingredientsNutritionInfo[$nutrientId])){
-
-                    // if nutrient exists add to existing value
-                    $nutrientOldValue = $ingredientsNutritionInfo[$nutrientId]['value'];
-                    $ingredientsNutritionInfo[$nutrientId]['value'] = $nutrientOldValue+($nutrient->getValue()*$quantity);
-
-                }else{
-
-                    // Sets the values for that nutrient multiplying by the ingredient quantity (total amount).
-                    $ingredientsNutritionInfo[$nutrientId]= [
-                        'nutrient_id' => $nutrient->getId(),
-                        'name'        => $nutrient->getName(),
-                        'value'       => $nutrient->getValue() * $quantity,
-                        'unit'        => $nutrient->getUnit(),
-                        'group'       => $nutrient->getGroup()
-                    ];
-                }
-            }
-        }
+        $ingredientsNutritionInfo = $this->recipeRepo->sumNutritionInfo($ingredients, $this->ingredientsRepo);
 
         return $this->success(Response::HTTP_OK, null,['nutrients' => $ingredientsNutritionInfo]);
     }
@@ -114,6 +80,8 @@ class RecipeController extends Controller
         if ($validator->fails()) {
             return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
         }
+        
+        //$this
 
         //TODO: calculate the total_energy outside the transaction
         DB::transaction(function () use($recipe, $ingredientsPost, $request) {
