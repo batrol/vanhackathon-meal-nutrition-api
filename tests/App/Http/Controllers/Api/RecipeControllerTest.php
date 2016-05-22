@@ -37,17 +37,29 @@ class RecipeControllerTest extends TestCase
     public function test_it_stores_a_new_recipe_and_its_ingredients()
     {
         $data = [
+            'user_id' => '1',
+            'name' => 'Perfect Meal ' . date("Ymdhis"),
+            'visibility' => 'PUBLIC',
+            'ingredients' => [
+                [
+                    'ndbno' => '01090',
+                    'quantity' => '1',
+                ],
+            ],
+        ];
+        $expectedRecipeData = [
             'name' => 'Perfect Meal',
             'visibility' => 'PUBLIC',
         ];
-        $expectedData = [
-            'name' => 'Perfect Meal',
-            'visibility' => 'PUBLIC',
+        $expectedIngredientsData = [
+            'ndbno' => '01090',
+            'quantity' => '1',
         ];
 
-        $this->post('api/v1/recipe', $data)
+        dd($this->post('api/v1/recipe', $data)
             ->seeStatusCode(\Illuminate\Http\Response::HTTP_CREATED)
-            ->seeInDatabase('recipe', $expectedData);
+            ->seeInDatabase('recipe', $expectedRecipeData));
+            //->seeInDatabase('ingredient_recipe', $expectedIngredientsData);
     }
 
     /**
