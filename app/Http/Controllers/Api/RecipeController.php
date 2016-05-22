@@ -8,7 +8,6 @@ use GoCanada\Models\IngredientRecipe;
 
 use GoCanada\Popos\Nutrient;
 use GoCanada\Repositories\IngredientsRepositoryInterface;
-use GuzzleHttp\Client;
 
 use Illuminate\Http\Request;
 use DB;
@@ -40,7 +39,6 @@ class RecipeController extends Controller
             // Get the ingredient identifier and quantity saved.
             $ndbno    = $ingredient->ndbno;
             $quantity = $ingredient->quantity;
-
 
             $nutrients = $this->ingredientsRepo->getNutrientsByIngredient($ndbno);
 
