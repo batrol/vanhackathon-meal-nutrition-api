@@ -1,4 +1,4 @@
-<?php namespace GoCanada\Repository;
+<?php namespace GoCanada\Repositories;
 
 interface IngredientsRepositoryInterface
 {
