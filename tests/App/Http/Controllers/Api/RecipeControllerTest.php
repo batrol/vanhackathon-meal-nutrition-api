@@ -85,13 +85,6 @@ class RecipeControllerTest extends TestCase
             ->seeStatusCode(\Illuminate\Http\Response::HTTP_BAD_REQUEST)
             ->dontSeeInDatabase('recipe', $expectedData);
     }
-
-    public function update(Request $request, $id)
-    {
-        $recipe = Recipe::findOrFail($id);
-
-        return $this->save($request, $recipe, "u");
-    }
 }
 
 
