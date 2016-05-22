@@ -4,6 +4,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Recipe extends Model
 {
+    protected $casts = [
+        'id' => 'int',
+        'user_id' => 'int',
+        'energy_total'=>'float'
+    ];
 
     protected $fillable = [
         'name',

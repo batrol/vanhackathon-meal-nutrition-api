@@ -9,6 +9,11 @@ class IngredientRecipe extends Model
      *
      * @var string
      */
+    protected $casts = [
+        'id' => 'int',
+        'recipe_id' => 'int',
+        'quantity'=>'float'
+    ];
     protected $table = 'ingredient_recipe';
 
     /**
