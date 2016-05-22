@@ -227,7 +227,8 @@ class RecipeController extends Controller
      * @return array
      */
     public function show($id) {
-
+        //TODO: validations
+        
         $Recipe = new Recipe();
         $recipeItem = $Recipe->findOrFail($id);
 
@@ -243,5 +244,3 @@ class RecipeController extends Controller
     }
 
 }
-
-
