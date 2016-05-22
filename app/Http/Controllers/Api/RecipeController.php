@@ -156,10 +156,10 @@ class RecipeController extends Controller
         });
 
         if ($action == "i"){
-            $this->success(Response::HTTP_CREATED);
+            $this->success(Response::HTTP_CREATED, "Recipe stored with id: {$recipe->id}!");
         }
 
-        $this->success(Response::HTTP_OK);
+        $this->success(Response::HTTP_OK, "Recipe with id {$recipe->id} updated!");
     }
 
     public function searchByName($name)
