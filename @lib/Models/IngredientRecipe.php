@@ -9,12 +9,14 @@ class IngredientRecipe extends Model
      *
      * @var string
      */
+    protected $table = 'ingredient_recipe';
+
+    // defining attribute response types
     protected $casts = [
         'id' => 'int',
         'recipe_id' => 'int',
         'quantity'=>'float'
     ];
-    protected $table = 'ingredient_recipe';
 
     /**
      * The attributes that are mass assignable.
