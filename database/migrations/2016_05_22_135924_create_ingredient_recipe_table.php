@@ -18,7 +18,8 @@ class CreateIngredientRecipeTable extends Migration {
 			$table->integer('recipe_id')->unsigned()->index('asd_idx');
 			$table->string('ndbno');
 			$table->float('quantity', 10, 0);
-			$table->timestamps();
+			$table->dateTime('created_at')->nullable();
+			$table->dateTime('updated_at')->nullable();
 		});
 	}
 

@@ -19,7 +19,8 @@ class CreateRecipeTable extends Migration {
 			$table->string('name');
 			$table->enum('visibility', array('PUBLIC','PRIVATE'));
 			$table->integer('energy_total')->unsigned()->nullable();
-			$table->timestamps();
+			$table->dateTime('created_at')->nullable();
+			$table->dateTime('updated_at')->nullable();
 			$table->unique(['user_id','name'], 'recipe_name_user_id_uk');
 		});
 	}
