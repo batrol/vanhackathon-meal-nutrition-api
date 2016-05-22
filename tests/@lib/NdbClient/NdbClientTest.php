@@ -13,7 +13,7 @@ class NdbClientFactoryTest extends TestCase
         $factory   = new NdbClientFactory();
         $ndbClient = $factory->buildFromEnv();
 
-        $ndbno = '28258';
+        $ndbno = '28258-123123';
         $ndbClient->getFoodReport($ndbno);
     }
 }
