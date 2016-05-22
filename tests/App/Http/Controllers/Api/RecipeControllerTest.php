@@ -22,7 +22,26 @@ class RecipeControllerTest extends TestCase
 
     }
 
+    /**
+     * @test
+     */
+    public function test_it_responses_all_recipe_show()
+    {
+        $this->get('/api/v1/recipe/2');
+        $responseData = $this->getResponseData();
+        $this->assertTrue(isset($responseData->data));
+        $this->assertTrue(isset($recipe->name));
+        $this->assertTrue(isset($recipe->user_id));
+        $this->assertTrue(isset($recipe->visibility));
+        $this->assertTrue(isset($recipe->energy_total));
 
+//        foreach($responseData->data as $recipe){
+//            $this->assertTrue(isset($recipe->name));
+//            $this->assertTrue(isset($recipe->user_id));
+//            $this->assertTrue(isset($recipe->visibility));
+//            $this->assertTrue(isset($recipe->energy_total));
+//        }
+    }
 
 }
 
