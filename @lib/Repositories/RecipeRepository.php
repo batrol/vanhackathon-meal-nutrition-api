@@ -11,7 +11,6 @@ class RecipeRepository extends BaseRepository  implements RecipeRepositoryInterf
         'id',
         'name' => 'like',
         'energy_total'
-
     ];
 
     public function model()
