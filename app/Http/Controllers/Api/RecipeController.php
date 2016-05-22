@@ -60,6 +60,7 @@ class RecipeController extends Controller
 
     /**
      * @param Request $request
+     * @param $id
      * @return JSON
      * This function receives the recipe data and updates it on the DB. It returns the id of the updated recipe.
      */

@@ -48,8 +48,6 @@ class Handler extends ExceptionHandler
             $trace                 = $e->getTrace();
             $error['trace_last_5'] = array_slice($trace, 0, 5);
 
-            dd($trace);
-
             return response()->json($error, 500);
         }
 
