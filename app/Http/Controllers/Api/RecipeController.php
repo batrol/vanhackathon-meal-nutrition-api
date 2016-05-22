@@ -69,7 +69,7 @@ class RecipeController extends Controller
             }
         }
 
-        return ['nutrients' => array_values($ingredientsNutritionInfo)];
+        return $this->success(Response::HTTP_OK, null,['nutrients' => $ingredientsNutritionInfo]);
     }
 
     public function store(Request $request)
@@ -90,8 +90,9 @@ class RecipeController extends Controller
     {
         $data = $request->all();
         $rules = [
-            'name' => 'required|unique:recipe',
-            'visibility' => 'required',
+            'user_id' => 'required|integer|exists:user,id',
+            'name' => 'required|unique:recipe,name,' . $recipe->id,
+            'visibility' => 'required|in:PUBLIC,PRIVATE',
             'ingredients' => 'array|required',
         ];
         $ingredientsPost = [];
@@ -113,6 +114,7 @@ class RecipeController extends Controller
 
         //TODO: calculate the total_energy outside the transaction
         DB::transaction(function () use($recipe, $ingredientsPost, $request) {
+            $recipe->user_id = $request->user_id;
             $recipe->name = $request->name;
             $recipe->visibility = $request->visibility;
 
@@ -142,15 +144,15 @@ class RecipeController extends Controller
             }
 
             //TODO: calculate the total_energy outside the transaction
-            $recipe->energy_total = $this->nutritionInfo($recipe->id)["nutrients"]["208"]["value"];
+            $recipe->energy_total = $this->nutritionInfo($recipe->id)->getData("data")["data"]["nutrients"]["208"]["value"];
             $recipe->save();
         });
 
         if ($action == "i"){
-            $this->success(Response::HTTP_CREATED, "Recipe stored with id: {$recipe->id}!");
+            return $this->success(Response::HTTP_CREATED, "Recipe stored with id: {$recipe->id}!", ["id" => $recipe->id]);
         }
 
-        $this->success(Response::HTTP_OK, "Recipe with id {$recipe->id} updated!");
+        return $this->success(Response::HTTP_OK, "Recipe with id {$recipe->id} updated!", ["id" => $recipe->id]);
     }
 
     public function searchByName($name)
