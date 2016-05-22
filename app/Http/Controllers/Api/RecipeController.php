@@ -104,11 +104,12 @@ class RecipeController extends Controller
         $rules = [
             'name' => 'required|unique:recipe',
             'visibility' => 'required',
-            'ingredients' => 'required',
+            'ingredients' => 'array|required',
         ];
         $ingredientsPost = [];
         if (array_key_exists('ingredients', $data)) {
             foreach ($request->get('ingredients') as $k => $v) {
+                $rules['ingredients.' . $k] = 'array|required';
                 $rules['ingredients.' . $k . '.ndbno'] = 'required';
                 $rules['ingredients.' . $k . '.quantity'] = 'required|numeric';
 
