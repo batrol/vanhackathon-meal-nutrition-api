@@ -36,9 +36,10 @@ class RecipeControllerTest extends TestCase
      */
     public function test_it_stores_a_new_recipe_and_its_ingredients()
     {
+        $name = uniqid("Perfect meal", true);
         $data = [
             'user_id' => '1',
-            'name' => 'Perfect Meal ' . date("Ymdhis"),
+            'name' => $name,
             'visibility' => 'PUBLIC',
             'ingredients' => [
                 [
@@ -48,18 +49,54 @@ class RecipeControllerTest extends TestCase
             ],
         ];
         $expectedRecipeData = [
-            'name' => 'Perfect Meal',
+            'name' => $name,
             'visibility' => 'PUBLIC',
         ];
+
+        $response = $this->post('api/v1/recipe', $data)
+            ->seeStatusCode(\Illuminate\Http\Response::HTTP_CREATED)
+            ->seeInDatabase('recipe', $expectedRecipeData);
+
         $expectedIngredientsData = [
+            'recipe_id' => $response->getResponseData()->data->id,
+            'ndbno' => '01090',
+            'quantity' => '1',
+        ];
+        $response->seeInDatabase('ingredient_recipe', $expectedIngredientsData);
+    }
+
+    /**
+     * @test
+     */
+    public function test_it_updates_an_existing_recipe_and_its_ingredients()
+    {
+        $name = uniqid("Perfect meal", true);
+        $data = [
+            'user_id' => '1',
+            'name' => $name,
+            'visibility' => 'PUBLIC',
+            'ingredients' => [
+                [
+                    'ndbno' => '01090',
+                    'quantity' => '1',
+                ],
+            ],
+        ];
+        $expectedRecipeData = [
+            'name' => $name,
+            'visibility' => 'PUBLIC',
+        ];
+
+        $expectedIngredientsData = [
+            'recipe_id' => 1,
             'ndbno' => '01090',
             'quantity' => '1',
         ];
 
-        dd($this->post('api/v1/recipe', $data)
-            ->seeStatusCode(\Illuminate\Http\Response::HTTP_CREATED)
-            ->seeInDatabase('recipe', $expectedRecipeData));
-            //->seeInDatabase('ingredient_recipe', $expectedIngredientsData);
+        $this->put('api/v1/recipe/1', $data)
+            ->seeStatusCode(\Illuminate\Http\Response::HTTP_OK)
+            ->seeInDatabase('recipe', $expectedRecipeData)
+            ->seeInDatabase('ingredient_recipe', $expectedIngredientsData);
     }
 
     /**
@@ -67,18 +104,53 @@ class RecipeControllerTest extends TestCase
      */
     public function test_it_fails_on_storing_a_new_recipe_with_a_wrong_visibility_option()
     {
+        $name = uniqid("Perfect meal", true);
         $data = [
-            'name' => 'Perfect Meal',
+            'user_id' => '1',
+            'name' => $name,
             'visibility' => 'PUBLICC',
+            'ingredients' => [
+                [
+                    'ndbno' => '01090',
+                    'quantity' => '1',
+                ],
+            ],
         ];
-        $expectedData = [
-            'name' => 'Perfect Meal',
+        $expectedRecipeData = [
+            'name' => $name,
             'visibility' => 'PUBLICC',
         ];
 
         $this->post('api/v1/recipe', $data)
             ->seeStatusCode(\Illuminate\Http\Response::HTTP_BAD_REQUEST)
-            ->dontSeeInDatabase('recipe', $expectedData);
+            ->dontSeeInDatabase('recipe', $expectedRecipeData);
+    }
+
+    /**
+     * @test
+     */
+    public function test_it_fails_on_storing_an_existing_recipe_with_a_wrong_visibility_option()
+    {
+        $name = uniqid("Perfect meal", true);
+        $data = [
+            'user_id' => '1',
+            'name' => $name,
+            'visibility' => 'PUBLICC',
+            'ingredients' => [
+                [
+                    'ndbno' => '01090',
+                    'quantity' => '1',
+                ],
+            ],
+        ];
+        $expectedRecipeData = [
+            'name' => $name,
+            'visibility' => 'PUBLICC',
+        ];
+
+        $this->put('api/v1/recipe/1', $data)
+            ->seeStatusCode(\Illuminate\Http\Response::HTTP_BAD_REQUEST)
+            ->dontSeeInDatabase('recipe', $expectedRecipeData);
     }
 
     /**
@@ -86,18 +158,41 @@ class RecipeControllerTest extends TestCase
      */
     public function test_it_fails_on_storing_a_new_recipe_without_ingredients()
     {
+        $name = uniqid("Perfect meal", true);
         $data = [
-            'name' => 'Perfect Meal',
+            'user_id' => '1',
+            'name' => $name,
             'visibility' => 'PUBLIC',
         ];
-        $expectedData = [
-            'name' => 'Perfect Meal',
+        $expectedRecipeData = [
+            'name' => $name,
             'visibility' => 'PUBLIC',
         ];
 
         $this->post('api/v1/recipe', $data)
             ->seeStatusCode(\Illuminate\Http\Response::HTTP_BAD_REQUEST)
-            ->dontSeeInDatabase('recipe', $expectedData);
+            ->dontSeeInDatabase('recipe', $expectedRecipeData);
+    }
+
+    /**
+     * @test
+     */
+    public function test_it_fails_on_storing_an_existing_recipe_without_ingredients()
+    {
+        $name = uniqid("Perfect meal", true);
+        $data = [
+            'user_id' => '1',
+            'name' => $name,
+            'visibility' => 'PUBLIC',
+        ];
+        $expectedRecipeData = [
+            'name' => $name,
+            'visibility' => 'PUBLIC',
+        ];
+
+        $this->put('api/v1/recipe/1', $data)
+            ->seeStatusCode(\Illuminate\Http\Response::HTTP_BAD_REQUEST)
+            ->dontSeeInDatabase('recipe', $expectedRecipeData);
     }
 
     /**
