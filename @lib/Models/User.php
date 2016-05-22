@@ -1,5 +1,7 @@
 <?php namespace GoCanada\Models;
 
+namespace GoCanada\Models;
+
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -36,8 +38,5 @@ class User extends Model implements AuthenticatableContract,
      */
     protected $hidden = ['password', 'remember_token'];
 
-    public function recipes ()
-    {
-        return $this->hasMany('GoCanada\Models\Recipe');
-    }
+
 }

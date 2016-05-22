@@ -85,6 +85,21 @@ class RecipeControllerTest extends TestCase
             ->seeStatusCode(\Illuminate\Http\Response::HTTP_BAD_REQUEST)
             ->dontSeeInDatabase('recipe', $expectedData);
     }
+
+    public function test_it_responses_all_recipe_show()
+    {
+        $this->get('/api/v1/recipe/2');
+        $recipe = $this->getResponseData();
+        $this->assertTrue(isset($recipe));
+        $this->assertTrue(isset($recipe->name));
+        $this->assertTrue(isset($recipe->user_id));
+        $this->assertTrue(isset($recipe->visibility));
+        $this->assertTrue(isset($recipe->energy_total));
+        foreach($recipe->ingredients as $ingredient){
+            $this->assertTrue(isset($ingredient->ndbno));
+            $this->assertTrue(isset($ingredient->quantity));
+        }
+    }
 }
 
 
