@@ -114,6 +114,8 @@ class RecipeController extends Controller
         if ($validator->fails()) {
             return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
         }
+        
+        $this
 
         //TODO: calculate the total_energy outside the transaction
         DB::transaction(function () use($recipe, $ingredientsPost, $request) {
