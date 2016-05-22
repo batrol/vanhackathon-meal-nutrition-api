@@ -9,12 +9,14 @@ class NdbClientTest extends TestCase
     /**
      * @test
      */
-    public function it_get_response()
+    public function it_gets_response()
     {
         $factory   = new NdbClientFactory();
         $ndbClient = $factory->buildFromEnv();
 
         $ndbno = '28258';
-        $ndbClient->getFoodReport($ndbno);
+        $response = $ndbClient->getFoodReport($ndbno);
+
+        dd(count($response));
     }
 }

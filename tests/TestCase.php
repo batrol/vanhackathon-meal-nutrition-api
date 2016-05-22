@@ -22,4 +22,18 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
 
         return $app;
     }
+
+    protected function getResponseData()
+    {
+        return $respData = json_decode($this->response->getContent());
+    }
+
+    protected function seeJsonHeader()
+    {
+        $actual   = $this->response->headers->get('content-type');
+
+        $this->assertTrue((bool) preg_match('/^application\/json/', $actual));
+
+        return $this;
+    }
 }
