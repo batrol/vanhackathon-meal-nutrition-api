@@ -56,6 +56,6 @@ class NdbClient
         $response     = $this->client->get(static::BASE_URL . '?ndbno=' . $ndbno . '&type=f&format=json&api_key=' . $this->getApiKey());
         $responseBody =  $response->getBody();
 
-        return json_decode($responseBody);
+        return dd(json_decode($responseBody));
     }
 }
