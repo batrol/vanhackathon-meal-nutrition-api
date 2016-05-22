@@ -3,7 +3,7 @@
 
 use GoCanada\Repositories\IngredientsRepository;
 
-class NdbClientTest extends TestCase
+class IngredientsRepositoryTest extends TestCase
 {
 
     /**
@@ -14,8 +14,8 @@ class NdbClientTest extends TestCase
         $repo  = new IngredientsRepository();
         $ndbno = '28258';
 
-        dd($repo->getNutrientsByIngredient($ndbno));
-
+//        dd($repo->getNutrientsByIngredient($ndbno));
+        // @todo
         
     }
 }
