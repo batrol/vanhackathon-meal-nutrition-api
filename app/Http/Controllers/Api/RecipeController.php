@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use GoCanada\Models\Recipe;
 use GoCanada\Models\IngredientRecipe;
 
+use GoCanada\Repositories\IngredientsRepositoryInterface;
 use GuzzleHttp\Client;
 
 use Illuminate\Http\Request;
@@ -15,13 +16,14 @@ use Validator;
 
 class RecipeController extends Controller
 {
-    public function __construct()
-    {
+    private $ingredientsRepository;
 
-        
+    public function __construct(IngredientsRepositoryInterface $ingredientsRepository)
+    {
+        $this->ingredientsRepository = $ingredientsRepository;
     }
 
-    // Function responsible for giving Nutrient Information related to a identified Recipe.
+    // Method responsible for giving Nutrient Information related to a identified Recipe.
     public function nutritionInfo($id)
     {
         // Get all ingredients of the identified Recipe in the database.
@@ -29,63 +31,29 @@ class RecipeController extends Controller
         $Recipe = new Recipe();
         $ingredients = $Recipe->findOrFail($id)->ingredients;
 
+        $ingredientsNutritionInfo = [];
+
         // Iterates over ingredients to fill the returning array.
-        foreach($ingredients as $ingredient){
+        foreach ($ingredients as $ingredient) {
 
             // Get the ingredient identifier and quantity saved.
-            $ndbno = $ingredient->ndbno;
+            $ndbno    = $ingredient->ndbno;
             $quantity = $ingredient->quantity;
 
-            // Decorator
+            $nutrients = $this->ingredientsRepository->getNutrientsByIngredient($ndbno);
 
-            // Consumes the USDA api that contains nutrition information about each ingredient.
-            $apiKey= 'IlAoU2IJI9TWWN7wmupWrZFwOfbyjOwNmTS2eZsy';
-            $apiUrl = 'http://api.nal.usda.gov/ndb/reports/?ndbno='.$ndbno.'&type=f&format=json&api_key='.$apiKey;
-            $client = new Client();
-            $response = $client->request('GET', $apiUrl);
-            $responseBody =  $response->getBody();
-
-            //TODO: check
-            if ($response->getStatusCode() != 200){
-                return $this->returnWithError('conexao falhou', 400);
-//                $returnData = array(
-//                    'status' => 'error',
-//                    'message' => 'No Api Response'
-//                );
-//                return response()->json($returnData, 500);
+            foreach ($nutrients as $nutrient) {
+                $ingredientsNutritionInfo[] = [
+                    'nutrient_id' => $nutrient->getId(),
+                    'name'        => $nutrient->getName(),
+                    'group'       => $nutrient->getGroup(),
+                    'value'       => $nutrient->getValue(),
+                    'unit'        => $nutrient->getUnit(),
+                ];
             }
-            $apiIngredient = json_decode($responseBody, true);
-
-            // Iterates over nutrients to find nutrients information and fills array that will be returned.
-            $nutrients = $apiIngredient['report']['food']['nutrients'];
-
-            foreach( $nutrients as $nutrient){
-
-                $nutrientId = $nutrient['nutrient_id'];
-                //var_dump($nutrient);
-                // Checks if nutrient is already existent in array
-                if(isset($ingredientsNutritionInfo[$nutrientId])){
-
-                    // if nutrient exists add to existing value
-                    $nutrientOldValue = $ingredientsNutritionInfo[$nutrientId]['value'];
-                    $ingredientsNutritionInfo[$nutrientId]['value'] = $nutrientOldValue+($nutrient['value']*$quantity);
-
-                }else{
-
-                    // Sets the values for that nutrient multiplying by the ingredient quantity (total amount).
-                    $ingredientsNutritionInfo[$nutrientId]= [
-                        'name'  => $nutrient['name'],
-                        'value' => $nutrient['value']*$quantity,
-                        'unit'  => $nutrient['unit'],
-                        'group' => $nutrient['group']
-                    ];
-                }
-
-            }
-
         }
 
-        return ['nutrients'=>$ingredientsNutritionInfo];
+        return ['nutrients' => $ingredientsNutritionInfo];
     }
 	
     public function store(Request $request)

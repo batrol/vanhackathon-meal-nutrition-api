@@ -4,7 +4,7 @@ use GuzzleHttp\Client;
 
 class NdbClient
 {
-    const BASE_URL = 'http://api.nal.usda.gov/ndb/';
+    const BASE_URL = 'http://api.nal.usda.gov/ndb';
 
     protected $client;
     protected $apiKey;
@@ -53,9 +53,10 @@ class NdbClient
 
     public function getFoodReport($ndbno)
     {
-        $response     = $this->client->get(static::BASE_URL . '?ndbno=' . $ndbno . '&type=f&format=json&api_key=' . $this->getApiKey());
+        $path         = '/reports/?ndbno=' . $ndbno . '&type=f&format=json&api_key=' . $this->getApiKey();
+        $response     = $this->client->get(static::BASE_URL . $path);
         $responseBody =  $response->getBody();
 
-        return dd(json_decode($responseBody));
+        return json_decode($responseBody);
     }
 }
