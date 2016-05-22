@@ -60,17 +60,18 @@ class RecipeController extends Controller
 
                     // Sets the values for that nutrient multiplying by the ingredient quantity (total amount).
                     $ingredientsNutritionInfo[$nutrientId]= [
-                        'name'  => $nutrient->getName(),
-                        'value' => $nutrient->getValue() * $quantity,
-                        'unit'  => $nutrient->getUnit(),
-                        'group' => $nutrient->getGroup()
+                        'nutrient_id' => $nutrient->getId(),
+                        'name'        => $nutrient->getName(),
+                        'value'       => $nutrient->getValue() * $quantity,
+                        'unit'        => $nutrient->getUnit(),
+                        'group'       => $nutrient->getGroup()
                     ];
                 }
             }
 
         }
 
-        return ['nutrients' => $ingredientsNutritionInfo];
+        return ['nutrients' => array_values($ingredientsNutritionInfo)];
     }
 	
     public function store(Request $request)
