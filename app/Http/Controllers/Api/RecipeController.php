@@ -9,6 +9,7 @@ use GoCanada\Models\IngredientRecipe;
 use GoCanada\Popos\Nutrient;
 use GoCanada\Repositories\IngredientsRepositoryInterface;
 
+use GoCanada\Repositories\RecipeRepositoryInterface;
 use Illuminate\Http\Request;
 use DB;
 use Illuminate\Http\Response;
@@ -18,10 +19,12 @@ use Validator;
 class RecipeController extends Controller
 {
     private $ingredientsRepo;
+    private $recipeRepo;
 
-    public function __construct(IngredientsRepositoryInterface $ingredientsRepo)
+    public function __construct(IngredientsRepositoryInterface $ingredientsRepo, RecipeRepositoryInterface $recipeRepo)
     {
         $this->ingredientsRepo = $ingredientsRepo;
+        $this->recipeRepo = $recipeRepo;
 
     }
 
@@ -40,7 +43,7 @@ class RecipeController extends Controller
             $ndbno    = $ingredient->ndbno;
             $quantity = $ingredient->quantity;
 
-
+            //TODO:COMMENT
             $nutrients = $this->ingredientsRepo->getNutrientsByIngredient($ndbno);
 
             /** @var Nutrient $nutrient */
@@ -69,7 +72,7 @@ class RecipeController extends Controller
             }
         }
 
-        return ['nutrients' => array_values($ingredientsNutritionInfo)];
+        return $this->success(Response::HTTP_OK, null,['nutrients' => array_values($ingredientsNutritionInfo)]);
     }
 
     public function store(Request $request)
@@ -155,9 +158,8 @@ class RecipeController extends Controller
 
     public function searchByName($name)
     {
-
-        $recipe = new Recipe();
-        $recipes = $recipe->searchByName($name);
+        $name = strtolower($name);
+        $recipes = $this->recipeRepo->findWhere(    [['name','like','%'.$name.'%']]);
         return $recipes;
     }
 
@@ -168,21 +170,7 @@ class RecipeController extends Controller
         if (!is_numeric($id) || $id<0){
             return ;
         }
-        $recipe = new Recipe();
-        $recipes = $recipe->searchByUser($id);
-        return $recipes;
-
-    }
-
-    public function searchById($id)
-    {
-        //TODO: check if it is number
-        //TODO: check response in error
-        if (!is_numeric($id) || $id<0){
-            return ;
-        }
-        $recipe = new Recipe();
-        $recipes = $recipe->searchByUser($id);
+        $recipes = $this->recipeRepo->find($id);
         return $recipes;
 
     }
@@ -193,8 +181,7 @@ class RecipeController extends Controller
         if (!is_numeric($min) || $min<0){
             return ;
         }
-        $recipe = new Recipe();
-        $recipes = $recipe->searchByEnergyMin($min);
+        $recipes = $this->recipeRepo->findWhere([['energy_total','>=',$min]]);
         return $recipes;
     }
 
@@ -204,8 +191,7 @@ class RecipeController extends Controller
         if ( !is_numeric($max) || $max<0){
             return ;
         }
-        $recipe = new Recipe();
-        $recipes = $recipe->searchByEnergyMax($max);
+        $recipes = $this->recipeRepo->findWhere([['energy_total','<=',$max]]);
         return $recipes;
     }
 
@@ -215,8 +201,7 @@ class RecipeController extends Controller
         if (!is_numeric($min) || !is_numeric($max) || $min<0 || $max<0){
             return;
         }
-        $recipe = new Recipe();
-        $recipes = $recipe->searchByEnergyRange($min,$max);
+        $recipes = $this->recipeRepo->findWhere([['energy_total','>=',$min],['energy_total','<=',$max]]);
         return $recipes;
     }
 

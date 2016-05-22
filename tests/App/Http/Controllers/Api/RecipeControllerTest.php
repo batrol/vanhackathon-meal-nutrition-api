@@ -20,15 +20,15 @@ class RecipeControllerTest extends TestCase
         $this->get('/api/v1/recipe/1/nutrition-info');
         $responseData = $this->getResponseData();
 
-        $this->assertTrue(isset($responseData->nutrients));
+        $nutrients = $responseData->data->nutrients;
+        $this->assertTrue(isset($nutrients));
 
-        foreach($responseData->nutrients as $nutrient){
+        foreach($nutrients as $nutrient){
             $this->assertTrue(isset($nutrient->name));
             $this->assertTrue(isset($nutrient->value));
             $this->assertTrue(isset($nutrient->unit));
             $this->assertTrue(isset($nutrient->group));
         }
-
     }
 
     /**
@@ -91,6 +91,21 @@ class RecipeControllerTest extends TestCase
     public function test_it_responses_all_recipe_show()
     {
         $this->get('/api/v1/recipe/2');
+        $recipe = $this->getResponseData();
+        $this->assertTrue(isset($recipe));
+        $this->assertTrue(isset($recipe->name));
+        $this->assertTrue(isset($recipe->user_id));
+        $this->assertTrue(isset($recipe->visibility));
+        $this->assertTrue(isset($recipe->energy_total));
+        foreach($recipe->ingredients as $ingredient){
+            $this->assertTrue(isset($ingredient->ndbno));
+            $this->assertTrue(isset($ingredient->quantity));
+        }
+    }
+
+    public function test_it_responses_all_recipe_search_by_name()
+    {
+        $this->get('/api/v1/recipe/name/');
         $recipe = $this->getResponseData();
         $this->assertTrue(isset($recipe));
         $this->assertTrue(isset($recipe->name));

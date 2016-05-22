@@ -2,11 +2,10 @@
 
 namespace GoCanada\Repositories;
 
-use GoCanada\NdbClient\NdbClientFactory;
-use GoCanada\Popos\Nutrient;
+use GoCanada\Models\Recipe;
 use Cache;
 
-class IngredientsCacheDecoratorRepository extends IngredientsRepository
+class RecipeCacheDecoratorRepository extends RecipeRepository
 {
 
     public function getNutrientsByIngredient($ndbno)

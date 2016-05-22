@@ -1,8 +1,11 @@
-<?php namespace GoCanada\Repositories;
+<?php
 
-interface RecipeRepositoryInterface
+namespace GoCanada\Repositories;
+
+
+use Prettus\Repository\Contracts\RepositoryInterface;
+
+interface RecipeRepositoryInterface extends RepositoryInterface
 {
-    public function getIngredientsByRecipe($id);
-    public function getNutritionalInformationByRecipe($id);
-    
+
 }
