@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use GoCanada\Models\Recipe;
 use GoCanada\Models\IngredientRecipe;
 
-use GoCanada\Popos\Nutrient;
 use GoCanada\Repositories\IngredientsRepositoryInterface;
 
 use GoCanada\Repositories\RecipeRepositoryInterface;
@@ -105,7 +104,7 @@ class RecipeController extends Controller
                     $ingredient->delete();
                 }
             }
-            foreach ($ingredientsPost as $ingredientPost) {
+            foreach ($ingredientsPost as $ingredientPost){
                 if (!in_array($ingredientPost->ndbno, $ingredientsRecipe)) {
                     $ingredient = new IngredientRecipe();
                     $ingredient->recipe_id = $recipe->id;
@@ -135,7 +134,7 @@ class RecipeController extends Controller
         //TODO: check if it is number
         //TODO: check response in error
         if (!is_numeric($id) || $id<0){
-            return ;
+            return $this->error(Response::HTTP_BAD_REQUEST, "Wrong arguments!");
         }
         $recipes = $this->recipeRepo->find($id);
         return $recipes;
@@ -146,7 +145,7 @@ class RecipeController extends Controller
     {
         //TODO: check response in error
         if (!is_numeric($min) || $min<0){
-            return ;
+            return $this->error(Response::HTTP_BAD_REQUEST, "Wrong arguments!");
         }
         $recipes = $this->recipeRepo->findWhere([['energy_total','>=',$min]]);
         return $recipes;
@@ -156,7 +155,7 @@ class RecipeController extends Controller
     {
         //TODO: check response in error
         if ( !is_numeric($max) || $max<0){
-            return ;
+            return $this->error(Response::HTTP_BAD_REQUEST, "Wrong arguments!");
         }
         $recipes = $this->recipeRepo->findWhere([['energy_total','<=',$max]]);
         return $recipes;
@@ -166,7 +165,7 @@ class RecipeController extends Controller
     {
         //TODO: check response in error
         if (!is_numeric($min) || !is_numeric($max) || $min<0 || $max<0){
-            return;
+            return $this->error(Response::HTTP_BAD_REQUEST, "Wrong arguments!");
         }
         $recipes = $this->recipeRepo->findWhere([['energy_total','>=',$min],['energy_total','<=',$max]]);
         return $recipes;

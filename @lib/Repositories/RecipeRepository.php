@@ -2,6 +2,7 @@
 namespace GoCanada\Repositories;
 
 use GoCanada\Models\Recipe;
+use GoCanada\Popos\Nutrient;
 use Prettus\Repository\Eloquent\BaseRepository;
 
 class RecipeRepository extends BaseRepository  implements RecipeRepositoryInterface

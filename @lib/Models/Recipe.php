@@ -20,12 +20,12 @@ class Recipe extends Model
 
     protected $table = 'recipe';
 
-    // Relashionship with IngredientRecipe
+    // Relationship with IngredientRecipe
     public function ingredients(){
         return $this->hasMany('GoCanada\Models\IngredientRecipe');
     }
 
-    // Relashionship with User
+    // Relationship with User
     public function user(){
         return $this->belongsTo('GoCanada\Models\User');
     }
