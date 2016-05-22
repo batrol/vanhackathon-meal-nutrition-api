@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use GoCanada\Popos\ApiResponse;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -12,10 +13,16 @@ abstract class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     protected function success($statusCode, $message = null, $data = null){
-        return response()->json(['status' => 'success', 'message' => $message, 'data' => $data], $statusCode);
+        $apiResponse = new ApiResponse($message, $statusCode, 'success');
+        $apiResponse->setData($data);
+
+        return $apiResponse->toArray();
     }
 
     protected function error($statusCode, $message = null, $data = null){
-        return response()->json(['status' => 'error', 'message' => $message, 'error' => $data], $statusCode);
+        $apiResponse = new ApiResponse($message, $statusCode, 'error');
+        $apiResponse->setData($data);
+
+        return $apiResponse->toArray();
     }
 }
