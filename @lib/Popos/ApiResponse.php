@@ -16,12 +16,11 @@ class ApiResponse
 
     public function toArray()
     {
-        return [
-            'status' => 'error',
-            'status_code' => $this->statusCode,
+        return response()->json([
+            'status' => $this->status,
             'message' => $this->message,
             'data' => $this->data,
-        ];
+        ], $this->statusCode);
     }
 
     /**

@@ -220,10 +220,14 @@ class RecipeController extends Controller
         return $recipes;
     }
 
+    /**
+     * @param $id
+     * @return array
+     */
     public function show($id) {
 
         $Recipe = new Recipe();
-        $recipeItem = $Recipe->find($id);
+        $recipeItem = $Recipe->findOrFail($id);
 
         $response = [
             "name" => $recipeItem->user->name,
@@ -233,9 +237,8 @@ class RecipeController extends Controller
             "ingredients" => $recipeItem->ingredients
         ];
 
-        return ["data"=>$response];
+        return $this->success(Response::HTTP_OK,NULL,$response);
     }
-
 
 }
 
