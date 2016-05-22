@@ -67,6 +67,25 @@ class RecipeControllerTest extends TestCase
             ->dontSeeInDatabase('recipe', $expectedData);
     }
 
+    /**
+     * @test
+     */
+    public function test_it_fails_on_storing_a_new_recipe_without_ingredients()
+    {
+        $data = [
+            'name' => 'Perfect Meal',
+            'visibility' => 'PUBLIC',
+        ];
+        $expectedData = [
+            'name' => 'Perfect Meal',
+            'visibility' => 'PUBLIC',
+        ];
+
+        $this->post('api/v1/recipe', $data)
+            ->seeStatusCode(\Illuminate\Http\Response::HTTP_BAD_REQUEST)
+            ->dontSeeInDatabase('recipe', $expectedData);
+    }
+
     public function update(Request $request, $id)
     {
         $recipe = Recipe::findOrFail($id);
