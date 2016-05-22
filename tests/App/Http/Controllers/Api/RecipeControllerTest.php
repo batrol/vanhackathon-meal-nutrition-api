@@ -220,6 +220,7 @@ class RecipeControllerTest extends TestCase
         $this->get('/api/v1/recipe/2');
         $recipe = $this->getResponseData()->data;
         $this->assertTrue(isset($recipe));
+        $this->assertTrue(isset($recipe));
         $this->assertTrue(isset($recipe->name));
         $this->assertTrue(isset($recipe->user_name));
         $this->assertTrue(isset($recipe->visibility));

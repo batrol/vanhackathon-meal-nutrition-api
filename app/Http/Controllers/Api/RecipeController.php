@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use GoCanada\Models\Recipe;
 use GoCanada\Models\IngredientRecipe;
 
-use GoCanada\Popos\Nutrient;
 use GoCanada\Repositories\IngredientsRepositoryInterface;
 
 use GoCanada\Repositories\RecipeRepositoryInterface;
@@ -33,44 +32,10 @@ class RecipeController extends Controller
     {
         // Get all ingredients of the identified Recipe in the database.
         // Also checks if there is no matching result for the $id and gives error response in that case.
-        $Recipe = new Recipe();
-        $ingredients = $Recipe->findOrFail($id)->ingredients;
+        $recipe = new Recipe();
+        $ingredients = $recipe->findOrFail($id)->ingredients;
 
-        // Iterates over ingredients to fill the returning array.
-        foreach($ingredients as $ingredient){
-
-            // Get the ingredient identifier and quantity saved.
-            $ndbno    = $ingredient->ndbno;
-            $quantity = $ingredient->quantity;
-
-            //TODO:COMMENT
-            $nutrients = $this->ingredientsRepo->getNutrientsByIngredient($ndbno);
-
-            /** @var Nutrient $nutrient */
-            foreach ($nutrients as $nutrient) {
-
-                $nutrientId = $nutrient->getId();
-                //var_dump($nutrient);
-                // Checks if nutrient is already existent in array
-                if(isset($ingredientsNutritionInfo[$nutrientId])){
-
-                    // if nutrient exists add to existing value
-                    $nutrientOldValue = $ingredientsNutritionInfo[$nutrientId]['value'];
-                    $ingredientsNutritionInfo[$nutrientId]['value'] = $nutrientOldValue+($nutrient->getValue()*$quantity);
-
-                }else{
-
-                    // Sets the values for that nutrient multiplying by the ingredient quantity (total amount).
-                    $ingredientsNutritionInfo[$nutrientId]= [
-                        'nutrient_id' => $nutrient->getId(),
-                        'name'        => $nutrient->getName(),
-                        'value'       => $nutrient->getValue() * $quantity,
-                        'unit'        => $nutrient->getUnit(),
-                        'group'       => $nutrient->getGroup()
-                    ];
-                }
-            }
-        }
+        $ingredientsNutritionInfo = $this->recipeRepo->sumNutritionInfo($ingredients, $this->ingredientsRepo);
 
         // return success with json of nutrients
         return $this->success(Response::HTTP_OK, null,['nutrients' => $ingredientsNutritionInfo]);
@@ -105,7 +70,7 @@ class RecipeController extends Controller
                 $rules['ingredients.' . $k . '.ndbno'] = 'required';
                 $rules['ingredients.' . $k . '.quantity'] = 'required|numeric';
 
-                $ingredientsPost[$v["ndbno"]] = $v;
+                $ingredientsPost[$v["ndbno"]] = (object)$v;
             }
         }
 
@@ -115,11 +80,14 @@ class RecipeController extends Controller
             return $this->error(Response::HTTP_BAD_REQUEST, implode(" ", $validator->errors()->all()), $validator->errors()->all());
         }
 
+        $ingredientsNutritionInfo = $this->recipeRepo->sumNutritionInfo($ingredientsPost, $this->ingredientsRepo);
+
         //TODO: calculate the total_energy outside the transaction
-        DB::transaction(function () use($recipe, $ingredientsPost, $request) {
+        DB::transaction(function () use($recipe, $ingredientsPost, $request, $ingredientsNutritionInfo) {
             $recipe->user_id = $request->user_id;
             $recipe->name = $request->name;
             $recipe->visibility = $request->visibility;
+            $recipe->energy_total = $ingredientsNutritionInfo["208"]["value"];
 
             $recipe->save();
 
@@ -127,7 +95,7 @@ class RecipeController extends Controller
             $ingredients = $recipe->ingredients;
             foreach ($ingredients as $ingredient) {
                 if (array_key_exists($ingredient->nbdno, $ingredientsPost)) {
-                    $ingredient->quantity = $ingredientsPost[$ingredient->nbdno]["quantity"];
+                    $ingredient->quantity = $ingredientsPost[$ingredient->nbdno]->quantity;
                     $ingredient->save();
 
                     $ingredientsRecipe[] = $ingredient->ndbno;
@@ -136,19 +104,15 @@ class RecipeController extends Controller
                     $ingredient->delete();
                 }
             }
-            foreach ($ingredientsPost as $ingredientPost) {
-                if (!in_array($ingredientPost["ndbno"], $ingredientsRecipe)) {
+            foreach ($ingredientsPost as $ingredientPost){
+                if (!in_array($ingredientPost->ndbno, $ingredientsRecipe)) {
                     $ingredient = new IngredientRecipe();
                     $ingredient->recipe_id = $recipe->id;
-                    $ingredient->ndbno = $ingredientPost["ndbno"];
-                    $ingredient->quantity = $ingredientPost["quantity"];
+                    $ingredient->ndbno = $ingredientPost->ndbno;
+                    $ingredient->quantity = $ingredientPost->quantity;
                     $ingredient->save();
                 }
             }
-
-            //TODO: calculate the total_energy outside the transaction
-            $recipe->energy_total = $this->nutritionInfo($recipe->id)->getData("data")["data"]["nutrients"]["208"]["value"];
-            $recipe->save();
         });
 
         if ($action == "i"){
@@ -192,6 +156,7 @@ class RecipeController extends Controller
 
     public function searchByUser($id)
     {
+
         //set the input values
         $input = [
             "id" => $id
@@ -218,6 +183,7 @@ class RecipeController extends Controller
 
     public function searchByEnergyMin($min)
     {
+
         ///set the input values
         $input = [
             "min" => $min
@@ -242,6 +208,7 @@ class RecipeController extends Controller
 
     public function searchByEnergyMax($max)
     {
+
         ///set the input values
         $input = [
             "max" => $max
@@ -265,7 +232,6 @@ class RecipeController extends Controller
 
     public function searchByEnergyRange($min,$max)
     {
-
         ///set the input values
         $input = [
             "min" => $min,
